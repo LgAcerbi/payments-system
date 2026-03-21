@@ -16,8 +16,13 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "es2022",
+    "customConditions": ["@workspace/source"],
     "baseUrl": ".",
     "paths": {
+      "@workspace/drizzle-pg": ["libs/drizzle-pg/src/index.ts"],
+      "@workspace/errors": ["libs/errors/src/index.ts"],
+      "@workspace/kafka": ["libs/kafka/src/index.ts"],
+      "@workspace/logger": ["libs/logger/src/index.ts"],
       "drizzle-orm": ["node_modules/drizzle-orm"],
       "drizzle-orm/*": ["node_modules/drizzle-orm/*"]
     }
