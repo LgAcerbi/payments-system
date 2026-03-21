@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compileOnSave": false,
+  "files": [],
+  "references": [
+    {
+      "path": "./apps/payment-service"
+    },
+    {
+      "path": "./libs/drizzle-pg"
+    },
+    {
+      "path": "./libs/errors"
+    },
+    {
+      "path": "./libs/kafka"
+    },
+    {
+      "path": "./libs/logger"
+    }
+  ]
+}
