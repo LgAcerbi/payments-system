@@ -1,0 +1,19 @@
+{
+  "name": "drizzle-pg",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/drizzle-pg/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "main": "libs/drizzle-pg/src/index.ts",
+        "outputPath": "dist/libs/drizzle-pg",
+        "tsConfig": "libs/drizzle-pg/tsconfig.lib.json",
+        "generatePackageJson": false
+      }
+    }
+  }
+}
