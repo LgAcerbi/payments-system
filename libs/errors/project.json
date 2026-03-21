@@ -1,0 +1,19 @@
+{
+  "name": "errors",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/errors/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "main": "libs/errors/src/index.ts",
+        "outputPath": "dist/libs/errors",
+        "tsConfig": "libs/errors/tsconfig.lib.json",
+        "generatePackageJson": false
+      }
+    }
+  }
+}
