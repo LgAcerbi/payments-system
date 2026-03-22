@@ -1,22 +1,30 @@
-import type { PaymentRepository, PaymentGateway } from '..';
+import type { PaymentRepository, PaymentProviderGateway } from '..';
 
+import { randomUUID } from 'crypto';
 import { Payment } from '../../domain';
 
 class PaymentService {
-    constructor(private readonly paymentRepository: PaymentRepository, private readonly paymentGateway: PaymentGateway) {}
+    constructor(private readonly paymentRepository: PaymentRepository, private readonly paymentProviderGateway: PaymentProviderGateway) {}
 
-    async createPayment(paymentData: Omit<Payment, 'id' | 'intentId' | 'createdAt' | 'updatedAt'>): Promise<Payment> {
-        const paymentIntent = await this.paymentGateway.createPaymentIntent(paymentData.amount, paymentData.currency);
+    async createPayment(paymentData: Omit<Payment, 'id' | 'intentId' | 'createdAt' | 'updatedAt'>, idempotencyKey: string): Promise<Payment> {
+        const providerPayment = await this.paymentProviderGateway.createPayment(paymentData.amount, paymentData.currency);
 
         const payment = new Payment(
             {
-                id: paymentIntent.id,
-                intentId: paymentIntent.id,
-                status: 'INITIATED',
+                id: randomUUID(),
+                idempotencyKey: idempotencyKey,
                 amount: paymentData.amount,
+                description: paymentData.description,
+                amountRefunded: paymentData.amountRefunded,
                 currency: paymentData.currency,
+                status: 'INITIATED',
                 orderId: paymentData.orderId,
                 method: paymentData.method,
+                provider: paymentData.provider,
+                providerPaymentId: providerPayment.id,
+                providerData: {
+                    ...providerPayment,
+                },
                 createdAt: new Date(),
                 updatedAt: new Date(),
             }
@@ -25,8 +33,8 @@ class PaymentService {
         return this.paymentRepository.createPayment(payment);
     }
 
-    async confirmPayment(intentId: string, paymentMethodId: string): Promise<void> {
-        await this.paymentGateway.confirmPaymentIntent(intentId, paymentMethodId);
+    async confirmPayment(paymentId: string, paymentMethodId: string): Promise<void> {
+        await this.paymentProviderGateway.confirmPayment(paymentId, paymentMethodId);
     }
 
     async getPaymentById(id: string): Promise<Payment | null> {
@@ -39,8 +47,8 @@ class PaymentService {
         return payment;
     }
 
-    async getPaymentByIntentId(intentId: string): Promise<Payment | null> {
-        const payment = await this.paymentRepository.getPaymentByIntentId(intentId);
+    async getPaymentByProviderId(providerId: string): Promise<Payment | null> {
+        const payment = await this.paymentRepository.getPaymentByProviderId(providerId);
 
         if (!payment) {
             return null;
