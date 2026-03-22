@@ -3,7 +3,7 @@ import type { Payment } from "../../domain";
 interface PaymentRepository {
     createPayment(payment: Payment): Promise<Payment>;
     getPaymentById(id: string): Promise<Payment>;
-    getPaymentByIntentId(intentId: string): Promise<Payment>;
+    getPaymentByProviderId(providerId: string): Promise<Payment>;
     getPaymentByOrderId(orderId: string): Promise<Payment>;
     confirmPayment(intentId: string, paymentMethodId: string): Promise<void>;
 }
