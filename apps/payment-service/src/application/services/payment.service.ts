@@ -17,7 +17,6 @@ class PaymentService {
                 currency: paymentData.currency,
                 orderId: paymentData.orderId,
                 method: paymentData.method,
-                methodOptions: paymentData.methodOptions,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             }
