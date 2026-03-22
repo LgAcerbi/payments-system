@@ -18,7 +18,7 @@ class StripePaymentGateway implements PaymentProviderGateway {
         return { id: paymentIntent.id };
     }
 
-    async confirmPayment(paymentId: string, paymentMethodId: string): Promise<void> {
+    async confirmPaymentIntent(paymentId: string, paymentMethodId: string): Promise<void> {
         await this.stripeInstance.paymentIntents.confirm(paymentId, {
             payment_method: paymentMethodId,
         });

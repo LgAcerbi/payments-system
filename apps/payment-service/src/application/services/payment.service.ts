@@ -33,8 +33,10 @@ class PaymentService {
         return this.paymentRepository.createPayment(payment);
     }
 
-    async confirmPayment(paymentId: string, paymentMethodId: string): Promise<void> {
-        await this.paymentProviderGateway.confirmPayment(paymentId, paymentMethodId);
+    async confirmPaymentIntent(paymentId: string, paymentMethodId: string): Promise<void> {
+        await this.paymentProviderGateway.confirmPaymentIntent(paymentId, paymentMethodId);
+
+        await this.paymentRepository.confirmPaymentIntent(paymentId);
     }
 
     async getPaymentById(id: string): Promise<Payment | null> {

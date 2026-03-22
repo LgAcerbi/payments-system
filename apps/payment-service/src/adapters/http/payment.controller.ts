@@ -185,7 +185,7 @@ class PaymentController {
                 },
             },
             handler: async (request: FastifyRequest<{ Params: { id: string }, Body: { paymentMethod: string } }>, reply) => {
-                await this.paymentService.confirmPayment(request.params.id, request.body.paymentMethod);
+                await this.paymentService.confirmPaymentIntent(request.params.id, request.body.paymentMethod);
 
                 return reply.status(200).send({ id: request.params.id });
             },
