@@ -1,4 +1,5 @@
-import { Payment } from '../../domain';
+import type { PaymentRepository } from '../';
+import type { Payment } from '../../domain';
 
 class PaymentService {
     constructor(private readonly paymentRepository: PaymentRepository) {}
