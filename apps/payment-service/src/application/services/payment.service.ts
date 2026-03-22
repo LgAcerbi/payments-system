@@ -17,7 +17,7 @@ class PaymentService {
                 description: paymentData.description,
                 amountRefunded: paymentData.amountRefunded,
                 currency: paymentData.currency,
-                status: 'INITIATED',
+                status: 'initiated',
                 orderId: paymentData.orderId,
                 method: paymentData.method,
                 provider: paymentData.provider,
