@@ -20,7 +20,11 @@ class PaymentController {
                         payment: {
                             type: 'object',
                             properties: {
-                                amount: { type: 'number' },
+                                amount: {
+                                    type: 'integer',
+                                    description:
+                                        'Amount in the smallest unit of currency (e.g. cents for USD). Consumers format for display.',
+                                },
                                 currency: { type: 'string' },
                                 orderId: { type: 'string' },
                                 method: { type: 'string' },
@@ -54,7 +58,11 @@ class PaymentController {
                         type: 'object',
                         properties: {
                             id: { type: 'string' },
-                            amount: { type: 'number' },
+                            amount: {
+                                type: 'integer',
+                                description:
+                                    'Amount in the smallest unit of currency (e.g. cents for USD).',
+                            },
                             currency: { type: 'string' },
                             orderId: { type: 'string' },
                             method: { type: 'string' },
