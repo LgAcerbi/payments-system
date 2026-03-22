@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+.git
+.gitignore
+**/.nx/cache
+**/dist
+coverage
+**/*.spec.ts
+.env
+.env.*
+*.md
+.cursor
+terminals
