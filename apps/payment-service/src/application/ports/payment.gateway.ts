@@ -1,7 +1,7 @@
-interface PaymentGateway {
-    createPaymentIntent(amount: number, currency: string): Promise<{ id: string }>;
-    confirmPaymentIntent(intentId: string, paymentMethodId: string): Promise<void>;
+interface PaymentProviderGateway {
+    createPayment(amount: number, currency: string): Promise<{ id: string }>;
+    confirmPayment(paymentId: string, paymentMethodId: string): Promise<void>;
 }
 
-export default PaymentGateway;
-export type { PaymentGateway };
+export default PaymentProviderGateway;
+export type { PaymentProviderGateway };
