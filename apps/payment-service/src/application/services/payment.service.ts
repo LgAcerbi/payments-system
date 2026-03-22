@@ -1,4 +1,4 @@
-import type { PaymentRepository } from '../';
+import type { PaymentRepository } from '..';
 import type { Payment } from '../../domain';
 
 class PaymentService {
