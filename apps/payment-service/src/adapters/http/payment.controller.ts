@@ -17,10 +17,16 @@ class PaymentController {
                 body: {
                     type: 'object',
                     properties: {
-                        amount: { type: 'number' },
-                        currency: { type: 'string' },
-                        orderId: { type: 'string' },
-                        method: { type: 'string' },
+                        payment: {
+                            type: 'object',
+                            properties: {
+                                amount: { type: 'number' },
+                                currency: { type: 'string' },
+                                orderId: { type: 'string' },
+                                method: { type: 'string' },
+                            },
+                        },
+                        idempotencyKey: { type: 'string' },
                     },
                 },
                 response: {
@@ -32,8 +38,8 @@ class PaymentController {
                     },
                 },
             },
-            handler: async (request: FastifyRequest<{ Body: Payment }>, reply) => {
-                const payment = await this.paymentService.createPayment(request.body);
+            handler: async (request: FastifyRequest<{ Body: { payment: Payment, idempotencyKey: string } }>, reply) => {
+                const payment = await this.paymentService.createPayment(request.body.payment, request.body.idempotencyKey);
 
                 return reply.status(201).send({ id: payment.id });
             },
@@ -102,7 +108,7 @@ class PaymentController {
                 },
             },
             handler: async (request: FastifyRequest<{ Params: { intentId: string } }>, reply) => {
-                const payment = await this.paymentService.getPaymentByIntentId(request.params.intentId);
+                const payment = await this.paymentService.getPaymentByProviderId(request.params.intentId);
 
                 if (!payment) {
                     return reply.status(204).send();
