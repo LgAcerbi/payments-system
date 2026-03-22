@@ -5,6 +5,7 @@ interface PaymentRepository {
     getPaymentById(id: string): Promise<Payment>;
     getPaymentByIntentId(intentId: string): Promise<Payment>;
     getPaymentByOrderId(orderId: string): Promise<Payment>;
+    confirmPayment(intentId: string, paymentMethodId: string): Promise<void>;
 }
 
 export default PaymentRepository;

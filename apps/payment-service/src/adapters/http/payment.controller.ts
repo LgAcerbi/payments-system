@@ -144,6 +144,38 @@ class PaymentController {
                 return reply.status(200).send(payment);
             },
         });
+
+        this.server.route({
+            method: 'POST',
+            url: '/payments/:id/confirm',
+            schema: {
+                params: {
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string', format: 'uuid' },
+                    },
+                },
+                body: {
+                    type: 'object',
+                    properties: {
+                        paymentMethod: { type: 'string' },
+                    },
+                },
+                response: {
+                    200: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string' },
+                        },
+                    },
+                },
+            },
+            handler: async (request: FastifyRequest<{ Params: { id: string }, Body: { paymentMethod: string } }>, reply) => {
+                await this.paymentService.confirmPayment(request.params.id, request.body.paymentMethod);
+
+                return reply.status(200).send({ id: request.params.id });
+            },
+        });
     }
 }
 

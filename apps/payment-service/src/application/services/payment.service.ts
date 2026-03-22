@@ -25,6 +25,10 @@ class PaymentService {
         return this.paymentRepository.createPayment(payment);
     }
 
+    async confirmPayment(intentId: string, paymentMethodId: string): Promise<void> {
+        await this.paymentGateway.confirmPaymentIntent(intentId, paymentMethodId);
+    }
+
     async getPaymentById(id: string): Promise<Payment | null> {
         const payment = await this.paymentRepository.getPaymentById(id);
 
