@@ -1,9 +1,9 @@
 type PaymentStatus =
-    | 'INITIATED'
-    | 'PROCESSING'
-    | 'SUCCEEDED'
-    | 'FAILED'
-    | 'CANCELED';
+    | 'initiated'
+    | 'processing'
+    | 'succeeded'
+    | 'failed'
+    | 'canceled';
 
 type PaymentProvider = 'stripe';
 
@@ -18,7 +18,7 @@ class Payment {
     public readonly method: string;
     public readonly provider: PaymentProvider;
     public readonly providerPaymentId: string;
-    public readonly providerData: Record<string, unknown> | null;
+    public readonly providerData: unknown;
     public readonly idempotencyKey: string;
     public readonly createdAt: Date;
     public readonly updatedAt: Date;
@@ -50,7 +50,7 @@ class Payment {
         method: string;
         provider: PaymentProvider;
         providerPaymentId: string
-        providerData: Record<string, unknown> | null;
+        providerData: unknown;
         createdAt: Date;
         updatedAt: Date;
     }) {
