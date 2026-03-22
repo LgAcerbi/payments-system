@@ -13,7 +13,6 @@ class Payment {
     public readonly orderId: string;
     public readonly intentId: string;
     public readonly method: string;
-    public readonly methodOptions: Record<string, unknown>;
     public readonly createdAt: Date;
     public readonly updatedAt: Date;
 
@@ -25,7 +24,6 @@ class Payment {
         orderId,
         intentId,
         method,
-        methodOptions,
         createdAt,
         updatedAt,
     }: {
@@ -36,7 +34,6 @@ class Payment {
         orderId: string;
         intentId: string;
         method: string;
-        methodOptions: Record<string, unknown>;
         createdAt: Date;
         updatedAt: Date;
     }) {
@@ -47,7 +44,6 @@ class Payment {
         this.orderId = orderId;
         this.intentId = intentId;
         this.method = method;
-        this.methodOptions = methodOptions;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
