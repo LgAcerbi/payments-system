@@ -26,6 +26,10 @@ class PaymentController {
             handler: async (request: FastifyRequest<{ Params: { id: string } }>, reply) => {
                 const payment = await this.paymentService.getPaymentById(request.params.id);
 
+                if (!payment) {
+                    return reply.status(204).send();
+                }
+
                 return reply.status(200).send(payment);
             },
         });
@@ -36,6 +40,10 @@ class PaymentController {
             handler: async (request: FastifyRequest<{ Params: { intentId: string } }>, reply) => {
                 const payment = await this.paymentService.getPaymentByIntentId(request.params.intentId);
 
+                if (!payment) {
+                    return reply.status(204).send();
+                }
+
                 return reply.status(200).send(payment);
             },
         });
@@ -45,7 +53,11 @@ class PaymentController {
             url: '/payments/order/:orderId',
             handler: async (request: FastifyRequest<{ Params: { orderId: string } }>, reply) => {
                 const payment = await this.paymentService.getPaymentByOrderId(request.params.orderId);
-                
+
+                if (!payment) {
+                    return reply.status(204).send();
+                }
+
                 return reply.status(200).send(payment);
             },
         });
