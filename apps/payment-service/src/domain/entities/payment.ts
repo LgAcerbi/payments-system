@@ -15,7 +15,6 @@ class Payment {
     public readonly currency: string;
     public readonly status: PaymentStatus;
     public readonly orderId: string;
-    public readonly intentId: string;
     public readonly method: string;
     public readonly provider: PaymentProvider;
     public readonly providerPaymentId: string;
@@ -32,7 +31,6 @@ class Payment {
         currency,
         status,
         orderId,
-        intentId,
         method,
         provider,
         providerPaymentId,
@@ -49,7 +47,6 @@ class Payment {
         currency: string;
         status: PaymentStatus;
         orderId: string;
-        intentId: string;
         method: string;
         provider: PaymentProvider;
         providerPaymentId: string
@@ -64,7 +61,6 @@ class Payment {
         this.currency = currency;
         this.status = status;
         this.orderId = orderId;
-        this.intentId = intentId;
         this.method = method;
         this.provider = provider;
         this.providerPaymentId = providerPaymentId;
