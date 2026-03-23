@@ -6,7 +6,7 @@ import { Payment } from '../../domain';
 class PaymentService {
     constructor(private readonly paymentRepository: PaymentRepository, private readonly paymentProviderGateway: PaymentProviderGateway) {}
 
-    async createPayment(paymentData: Omit<Payment, 'id' | 'intentId' | 'createdAt' | 'updatedAt'>, idempotencyKey: string): Promise<Payment> {
+    async createPayment(paymentData: Pick<Payment, 'amount' | 'currency' | 'orderId' | 'method' | 'provider' | 'description'>, idempotencyKey: string): Promise<Payment> {
         const providerPayment = await this.paymentProviderGateway.createPayment(paymentData.amount, paymentData.currency);
 
         const payment = new Payment(
@@ -15,7 +15,7 @@ class PaymentService {
                 idempotencyKey: idempotencyKey,
                 amount: paymentData.amount,
                 description: paymentData.description,
-                amountRefunded: paymentData.amountRefunded,
+                amountRefunded: null,
                 currency: paymentData.currency,
                 status: 'initiated',
                 orderId: paymentData.orderId,
