@@ -13,6 +13,7 @@ class PaymentEvent {
     public readonly event: PaymentEvents;
     public readonly status: Payment['status'];
     public readonly idempotencyKey: string;
+    public readonly provider: Payment['provider'];
     public readonly providerEventId: string;
     public readonly providerPaymentId: Payment['providerPaymentId'];
     public readonly providerRawPayload: unknown;
@@ -25,6 +26,7 @@ class PaymentEvent {
         event,
         status,
         idempotencyKey,
+        provider,
         providerEventId,
         providerPaymentId,
         providerRawPayload,
@@ -36,8 +38,9 @@ class PaymentEvent {
         event: PaymentEvents;
         status: Payment['status'];
         idempotencyKey: string;
+        provider: Payment['provider'];
         providerEventId: string;
-        providerPaymentId: string;
+        providerPaymentId: Payment['providerPaymentId'];
         providerRawPayload: unknown;
         occurredAt: Date;
         createdAt: Date;
@@ -47,6 +50,7 @@ class PaymentEvent {
         this.event = event;
         this.status = status;
         this.idempotencyKey = idempotencyKey;
+        this.provider = provider;
         this.providerEventId = providerEventId;
         this.providerPaymentId = providerPaymentId;
         this.providerRawPayload = providerRawPayload;
