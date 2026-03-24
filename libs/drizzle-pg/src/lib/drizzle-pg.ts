@@ -7,11 +7,11 @@ import { Pool } from 'pg';
  * Bound matches `drizzle-orm` `drizzle()` / `NodePgDatabase`: string keys to
  * schema objects (tables / relations).
  */
-type DrizzleNodePostgresSchema = {
+type DrizzlePostgresSchema = {
   [key: string]: object;
 };
 
-class NodePgDrizzleClient<TSchema extends DrizzleNodePostgresSchema> {
+class PgDrizzleClient<TSchema extends DrizzlePostgresSchema> {
   private readonly dbInstance: NodePgDatabase<TSchema>;
   private readonly dbPool: Pool;
 
@@ -33,12 +33,12 @@ class NodePgDrizzleClient<TSchema extends DrizzleNodePostgresSchema> {
   }
 }
 
-function createNodePgDrizzleClient<TSchema extends DrizzleNodePostgresSchema>(
+function createPgDrizzleClient<TSchema extends DrizzlePostgresSchema>(
   connectionString: string,
   schema: TSchema,
-): NodePgDrizzleClient<TSchema> {
-  return new NodePgDrizzleClient(connectionString, schema);
+): PgDrizzleClient<TSchema> {
+  return new PgDrizzleClient(connectionString, schema);
 }
 
-export { createNodePgDrizzleClient, NodePgDrizzleClient };
+export { createPgDrizzleClient, PgDrizzleClient };
 export type { NodePgDatabase };
