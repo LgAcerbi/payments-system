@@ -10,111 +10,134 @@ class PostgresPaymentRepository implements PaymentRepository {
     constructor(private readonly db: NodePgDatabase<PaymentDbSchema>) {}
 
     async createPayment(payment: Payment): Promise<Payment> {
-        await this.db
-            .insert(paymentDbSchema.payments)
-            .values(payment)
-            .returning();
+        await this.db.insert(paymentDbSchema.payments).values(payment).returning();
 
         return payment;
     }
 
     async getPaymentById(id: string) {
-        const [result] = await this.db.select().from(paymentDbSchema.payments).where(eq(paymentDbSchema.payments.id, id));
-        
+        const [result] = await this.db
+            .select()
+            .from(paymentDbSchema.payments)
+            .where(eq(paymentDbSchema.payments.id, id));
+
         if (!result) {
             return null;
         }
 
-        const payment = new Payment(
-            {
-                id: result.id,
-                amount: result.amount,
-                description: result.description,
-                amountRefunded: result.amountRefunded,
-                currency: result.currency,
-                status: result.status,
-                orderId: result.orderId,
-                method: result.method,
-                provider: result.provider,
-                providerPaymentId: result.providerPaymentId,
-                providerData: result.providerData,
-                idempotencyKey: result.idempotencyKey,
-                createdAt: result.createdAt,
-                updatedAt: result.updatedAt,
-            }
-        );
+        const payment = new Payment({
+            id: result.id,
+            amount: result.amount,
+            description: result.description,
+            amountRefunded: result.amountRefunded,
+            currency: result.currency,
+            status: result.status,
+            orderId: result.orderId,
+            method: result.method,
+            provider: result.provider,
+            providerPaymentId: result.providerPaymentId,
+            providerData: result.providerData,
+            idempotencyKey: result.idempotencyKey,
+            createdAt: result.createdAt,
+            updatedAt: result.updatedAt,
+        });
 
         return payment;
     }
 
-    async getPaymentByProviderPaymentId(providerId: string) {
-        const [result] = await this.db.select().from(paymentDbSchema.payments).where(eq(paymentDbSchema.payments.providerPaymentId, providerId));
-        
+    async getPaymentByProviderPaymentId(providerId: string, provider: Payment['provider']) {
+        const [result] = await this.db
+            .select()
+            .from(paymentDbSchema.payments)
+            .where(
+                and(
+                    eq(paymentDbSchema.payments.providerPaymentId, providerId),
+                    eq(paymentDbSchema.payments.provider, provider),
+                ),
+            );
+
         if (!result) {
             return null;
         }
 
-        const payment = new Payment(
-            {
-                id: result.id,
-                idempotencyKey: result.idempotencyKey,
-                amount: result.amount,
-                description: result.description,
-                amountRefunded: result.amountRefunded,
-                currency: result.currency,
-                status: result.status,
-                orderId: result.orderId,
-                method: result.method,
-                provider: result.provider,
-                providerPaymentId: result.providerPaymentId,
-                providerData: result.providerData,
-                createdAt: result.createdAt,
-                updatedAt: result.updatedAt,
-            }
-        );
+        const payment = new Payment({
+            id: result.id,
+            idempotencyKey: result.idempotencyKey,
+            amount: result.amount,
+            description: result.description,
+            amountRefunded: result.amountRefunded,
+            currency: result.currency,
+            status: result.status,
+            orderId: result.orderId,
+            method: result.method,
+            provider: result.provider,
+            providerPaymentId: result.providerPaymentId,
+            providerData: result.providerData,
+            createdAt: result.createdAt,
+            updatedAt: result.updatedAt,
+        });
 
         return payment;
     }
 
     async getPaymentByOrderId(orderId: string) {
-        const [result] = await this.db.select().from(paymentDbSchema.payments).where(eq(paymentDbSchema.payments.orderId, orderId));
-        
+        const [result] = await this.db
+            .select()
+            .from(paymentDbSchema.payments)
+            .where(eq(paymentDbSchema.payments.orderId, orderId));
+
         if (!result) {
             return null;
         }
 
-        const payment = new Payment(
-            {
-                id: result.id,
-                idempotencyKey: result.idempotencyKey,
-                amount: result.amount,
-                description: result.description,
-                amountRefunded: result.amountRefunded,
-                currency: result.currency,
-                status: result.status,
-                orderId: result.orderId,
-                method: result.method,
-                provider: result.provider,
-                providerPaymentId: result.providerPaymentId,
-                providerData: result.providerData,
-                createdAt: result.createdAt,
-                updatedAt: result.updatedAt,
-            }
-        );
+        const payment = new Payment({
+            id: result.id,
+            idempotencyKey: result.idempotencyKey,
+            amount: result.amount,
+            description: result.description,
+            amountRefunded: result.amountRefunded,
+            currency: result.currency,
+            status: result.status,
+            orderId: result.orderId,
+            method: result.method,
+            provider: result.provider,
+            providerPaymentId: result.providerPaymentId,
+            providerData: result.providerData,
+            createdAt: result.createdAt,
+            updatedAt: result.updatedAt,
+        });
 
         return payment;
     }
 
     async confirmPaymentIntent(paymentId: string): Promise<void> {
-        await this.db.update(paymentDbSchema.payments).set({ status: 'processing' }).where(eq(paymentDbSchema.payments.id, paymentId));
+        await this.db
+            .update(paymentDbSchema.payments)
+            .set({ status: 'processing' })
+            .where(eq(paymentDbSchema.payments.id, paymentId));
     }
 
     async updatePaymentStatusById(paymentId: string, status: Payment['status']): Promise<void> {
-        await this.db.update(paymentDbSchema.payments).set({ status }).where(eq(paymentDbSchema.payments.id, paymentId));
+        await this.db
+            .update(paymentDbSchema.payments)
+            .set({ status })
+            .where(eq(paymentDbSchema.payments.id, paymentId));
     }
 
-    async updatePaymentStatusByProviderPaymentId(providerPaymentId: string, status: Payment['status'], provider: Payment['provider']): Promise<void> {
-        await this.db.update(paymentDbSchema.payments).set({ status }).where(and(eq(paymentDbSchema.payments.providerPaymentId, providerPaymentId), eq(paymentDbSchema.payments.provider, provider)));
+    async updatePaymentStatusByProviderPaymentId(
+        providerPaymentId: string,
+        status: Payment['status'],
+        provider: Payment['provider'],
+    ): Promise<void> {
+        await this.db
+            .update(paymentDbSchema.payments)
+            .set({ status })
+            .where(
+                and(
+                    eq(paymentDbSchema.payments.providerPaymentId, providerPaymentId),
+                    eq(paymentDbSchema.payments.provider, provider),
+                ),
+            );
     }
 }
 
