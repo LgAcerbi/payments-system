@@ -1,6 +1,5 @@
 import type { Consumer } from 'kafkajs';
-import type { Payment } from '../../domain';
-import type { PaymentEventMapper, PaymentEventService } from '../../application';
+import type { PaymentEventService, PaymentEventMapperResolver } from '../../application';
 
 import { logger } from '@workspace/logger';
 import { ValidationError, ConflictError } from '@workspace/errors';
@@ -10,10 +9,7 @@ class PaymentProviderEventConsumer {
     constructor(
         private readonly kafkaConsumer: Consumer,
         private readonly paymentEventService: PaymentEventService,
-        private readonly paymentEventMapperRegistry: Map<
-            Payment['provider'],
-            PaymentEventMapper['toPaymentProviderEvent']
-        >,
+        private readonly paymentEventMapperResolver: PaymentEventMapperResolver,
     ) {}
 
     private buildKafkaMessageId(topic: string, partition: number, offset: string): string {
@@ -59,7 +55,7 @@ class PaymentProviderEventConsumer {
                         );
                     }
 
-                    const eventProviderMapperFunction = this.paymentEventMapperRegistry.get(parsedEvent.data.provider);
+                    const eventProviderMapperFunction = this.paymentEventMapperResolver.resolve(parsedEvent.data.provider);
 
                     if (!eventProviderMapperFunction) {
                         throw new ValidationError(`Invalid payment provider: ${parsedEvent.data.provider}`);
