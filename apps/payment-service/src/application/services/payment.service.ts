@@ -1,40 +1,59 @@
-import type { PaymentRepository, PaymentProviderGateway } from '..';
+import type { PaymentRepository, PaymentProviderGatewayResolver } from '..';
 
 import { randomUUID } from 'crypto';
+import { NotFoundError } from '@workspace/errors';
 import { Payment } from '../../domain';
 
 class PaymentService {
-    constructor(private readonly paymentRepository: PaymentRepository, private readonly paymentProviderGateway: PaymentProviderGateway) {}
+    constructor(
+        private readonly paymentRepository: PaymentRepository,
+        private readonly paymentProviderGatewayResolver: PaymentProviderGatewayResolver,
+    ) {}
 
-    async createPayment(paymentData: Pick<Payment, 'amount' | 'currency' | 'orderId' | 'method' | 'provider' | 'description'>, idempotencyKey: string): Promise<Payment> {
-        const providerPayment = await this.paymentProviderGateway.createPayment(paymentData.amount, paymentData.currency);
+    async createPayment(
+        paymentData: Pick<Payment, 'amount' | 'currency' | 'orderId' | 'method' | 'provider' | 'description'>,
+        idempotencyKey: string,
+    ): Promise<Payment> {
+        const paymentProviderGateway = this.paymentProviderGatewayResolver.resolve(paymentData.provider);
 
-        const payment = new Payment(
-            {
-                id: randomUUID(),
-                idempotencyKey: idempotencyKey,
-                amount: paymentData.amount,
-                description: paymentData.description,
-                amountRefunded: null,
-                currency: paymentData.currency,
-                status: 'initiated',
-                orderId: paymentData.orderId,
-                method: paymentData.method,
-                provider: paymentData.provider,
-                providerPaymentId: providerPayment.id,
-                providerData: {
-                    ...providerPayment,
-                },
-                createdAt: new Date(),
-                updatedAt: new Date(),
-            }
+        const providerPayment = await paymentProviderGateway.createPayment(
+            paymentData.amount,
+            paymentData.currency,
         );
+
+        const payment = new Payment({
+            id: randomUUID(),
+            idempotencyKey: idempotencyKey,
+            amount: paymentData.amount,
+            description: paymentData.description,
+            amountRefunded: null,
+            currency: paymentData.currency,
+            status: 'initiated',
+            orderId: paymentData.orderId,
+            method: paymentData.method,
+            provider: paymentData.provider,
+            providerPaymentId: providerPayment.id,
+            providerData: {
+                ...providerPayment,
+            },
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        });
 
         return this.paymentRepository.createPayment(payment);
     }
 
     async confirmPaymentIntent(paymentId: string, paymentMethodId: string): Promise<void> {
-        await this.paymentProviderGateway.confirmPaymentIntent(paymentId, paymentMethodId);
+
+        const payment = await this.paymentRepository.getPaymentById(paymentId);
+
+        if (!payment) {
+            throw new NotFoundError('Payment not found');
+        }
+
+        const paymentProviderGateway = this.paymentProviderGatewayResolver.resolve(payment.provider);
+        
+        await paymentProviderGateway.confirmPaymentIntent(paymentId, paymentMethodId);
 
         await this.paymentRepository.confirmPaymentIntent(paymentId);
     }
@@ -49,7 +68,10 @@ class PaymentService {
         return payment;
     }
 
-    async getPaymentByProviderPaymentId(providerPaymentId: string, provider: Payment['provider']): Promise<Payment | null> {
+    async getPaymentByProviderPaymentId(
+        providerPaymentId: string,
+        provider: Payment['provider'],
+    ): Promise<Payment | null> {
         const payment = await this.paymentRepository.getPaymentByProviderPaymentId(providerPaymentId, provider);
 
         if (!payment) {
