@@ -1,11 +1,11 @@
-import type { Payment, PaymentEvent } from '../../domain';
 import type { PaymentProviderEventDto } from '@workspace/payment';
 
 import { ValidationError } from '@workspace/errors';
+import { PaymentEvent } from '../../domain';
 
 const stripeEventMap = new Map<
     string,
-    { event: PaymentEvent['event']; status: Payment['status'] }
+    { event: PaymentEvent['event']; status: PaymentEvent['status'] }
 >([
     [
         'payment_intent.created',
@@ -43,11 +43,13 @@ class StripePaymentEventMapper {
 
         const occurredAt = new Date(paymentProviderEvent.occurredAt);
 
-        return {
+        const partialPaymentEvent = {
             ...paymentProviderEvent,
             ...stripeEvent,
             occurredAt,
         };
+
+        return partialPaymentEvent;
     }
 }
 
