@@ -53,7 +53,7 @@ class PaymentService {
 
         const paymentProviderGateway = this.paymentProviderGatewayResolver.resolve(payment.provider);
         
-        await paymentProviderGateway.confirmPaymentIntent(paymentId, paymentMethodId);
+        await paymentProviderGateway.confirmPaymentIntent(payment.providerPaymentId, paymentMethodId);
 
         await this.paymentRepository.confirmPaymentIntent(paymentId);
     }
