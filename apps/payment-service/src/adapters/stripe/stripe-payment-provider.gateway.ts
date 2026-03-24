@@ -1,4 +1,4 @@
-import type { PaymentProviderGateway } from '../../application/ports/payment.gateway';
+import type { PaymentProviderGateway } from '../../application';
 
 import { Stripe as StripeLib } from 'stripe';
 
