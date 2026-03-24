@@ -1,6 +1,8 @@
 import { PgDrizzleClient } from '@workspace/drizzle-pg';
 import { KafkaClient } from '@workspace/kafka';
 import {
+    postgresDbSchema,
+    createHttpServer,
     HttpPaymentController,
     KafkaPaymentProviderEventConsumer,
     PostgresPaymentRepository,
@@ -8,9 +10,7 @@ import {
     StripePaymentProviderGateway,
     StripePaymentEventMapper,
     PaymentProviderGatewayResolverAdapter,
-    PaymentEventMapperResolverAdapter,
-    postgresDbSchema,
-    createHttpServer,
+    PaymentEventMapperResolverAdapter
 } from './adapters';
 import { PaymentEventService, PaymentService } from './application';
 
