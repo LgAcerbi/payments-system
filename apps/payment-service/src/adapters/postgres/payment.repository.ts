@@ -1,7 +1,7 @@
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { PaymentDbSchema } from './payment.schema';
 
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { Payment } from '../../domain';
 import { paymentDbSchema } from './payment.schema';
 import { PaymentRepository } from '../../application';
@@ -101,8 +101,8 @@ class PostgresPaymentRepository implements PaymentRepository {
         await this.db.update(paymentDbSchema.payments).set({ status }).where(eq(paymentDbSchema.payments.id, paymentId));
     }
 
-    async updatePaymentStatusByProviderPaymentId(providerPaymentId: string, status: Payment['status']): Promise<void> {
-        await this.db.update(paymentDbSchema.payments).set({ status }).where(eq(paymentDbSchema.payments.providerPaymentId, providerPaymentId));
+    async updatePaymentStatusByProviderPaymentId(providerPaymentId: string, status: Payment['status'], provider: Payment['provider']): Promise<void> {
+        await this.db.update(paymentDbSchema.payments).set({ status }).where(and(eq(paymentDbSchema.payments.providerPaymentId, providerPaymentId), eq(paymentDbSchema.payments.provider, provider)));
     }
 }
 
