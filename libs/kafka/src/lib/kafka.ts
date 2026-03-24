@@ -1,43 +1,99 @@
+import type { Producer, Consumer } from 'kafkajs';
+
 import { Kafka } from 'kafkajs';
 
 type KafkaNodeClientOptions = {
-  brokers: string[];
-  clientId: string;
+    brokers: string[];
+    clientId: string;
 };
 
 class KafkaNodeClient {
-  private readonly kafka: Kafka;
+    private readonly kafka: Kafka;
 
-  constructor({ brokers, clientId }: KafkaNodeClientOptions) {
-    if (!clientId) {
-      throw new Error('Missing Kafka client id');
+    constructor({ brokers, clientId }: KafkaNodeClientOptions) {
+        if (!clientId) {
+            throw new Error('Missing Kafka client id');
+        }
+
+        if (brokers.length === 0) {
+            throw new Error('Missing Kafka brokers');
+        }
+
+        this.kafka = new Kafka({
+            clientId,
+            brokers,
+        });
     }
 
-    if (brokers.length === 0) {
-      throw new Error('Missing Kafka brokers');
+    private isUnknownTopicError(error: unknown): boolean {
+        if (!(error instanceof Error)) {
+            return false;
+        }
+
+        return error.message.includes(
+            'This server does not host this topic-partition',
+        );
     }
 
-    this.kafka = new Kafka({
-      clientId,
-      brokers,
-    });
-  }
+    async getProducer(connectionRetries = 3): Promise<Producer> {
+        const producer = this.kafka.producer();
 
-  getProducer() {
-    return this.kafka.producer();
-  }
+        for (let i = 0; i < connectionRetries; i++) {
+            try {
+                await producer.connect();
 
-  getConsumer(groupId: string) {
-    if (!groupId) {
-      throw new Error('Missing Kafka consumer group id');
+                return producer;
+            } catch (error) {
+                if (!this.isUnknownTopicError(error)) {
+                    throw error;
+                }
+            }
+        }
+
+        throw new Error('Failed to connect to Kafka producer');
     }
 
-    return this.kafka.consumer({ groupId });
-  }
+    async getConsumer(
+        groupId: string,
+        topic: string,
+        fromBeginning = false,
+        connectionRetries = 3,
+    ): Promise<Consumer> {
+        if (!groupId) {
+            throw new Error('Missing Kafka consumer group id');
+        }
+
+        const consumer = this.kafka.consumer({ groupId });
+
+        for (let i = 0; i < connectionRetries; i++) {
+            try {
+                await consumer.connect();
+
+                await consumer.subscribe({
+                    topic,
+                    fromBeginning,
+                });
+
+                return consumer;
+            } catch (error) {
+                if (!this.isUnknownTopicError(error)) {
+                    throw error;
+                }
+
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 1000);
+                });
+            }
+        }
+
+        throw new Error('Failed to connect to Kafka consumer');
+    }
 }
 
-function createKafkaNodeClient(options: KafkaNodeClientOptions): KafkaNodeClient {
-  return new KafkaNodeClient(options);
+function createKafkaNodeClient(
+    options: KafkaNodeClientOptions,
+): KafkaNodeClient {
+    return new KafkaNodeClient(options);
 }
 
 export { createKafkaNodeClient, KafkaNodeClient };
