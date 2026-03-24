@@ -29,12 +29,12 @@ const postgresPaymentSchema = pgTable("payments", {
     updatedAt: timestamp("updated_at").notNull(),
 })
 
-const paymentDbSchema = {
+const postgresPaymentDbSchema = {
     payments: postgresPaymentSchema,
 }
 
-type PaymentDbSchema = typeof paymentDbSchema
+type PostgresPaymentDbSchema = typeof postgresPaymentDbSchema
 
 export default postgresPaymentSchema
-export { postgresPaymentSchema, paymentDbSchema, paymentStatusEnum }
-export type { PaymentDbSchema }
+export { postgresPaymentSchema, postgresPaymentDbSchema, paymentStatusEnum, paymentProviderEnum }
+export type { PostgresPaymentDbSchema }

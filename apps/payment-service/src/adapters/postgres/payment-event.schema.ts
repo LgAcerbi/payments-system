@@ -1,3 +1,4 @@
+import { paymentProviderEnum } from "./payment.schema"
 import { pgEnum, pgTable, uuid, varchar, timestamp, jsonb } from "drizzle-orm/pg-core"
 
 const paymentEventEnum = pgEnum("payment_event", [
@@ -12,10 +13,6 @@ const paymentEventStatusEnum = pgEnum("payment_event_status", [
     "created",
     "processed",
     "failed",
-])
-
-const paymentProviderEnum = pgEnum("payment_provider", [
-    "stripe",
 ])
 
 const postgresPaymentEventSchema = pgTable("payment_events", {
@@ -33,12 +30,12 @@ const postgresPaymentEventSchema = pgTable("payment_events", {
     createdAt: timestamp("created_at").notNull(),
 })
 
-const paymentEventDbSchema = {
+const postgresPaymentEventDbSchema = {
     paymentEvents: postgresPaymentEventSchema,
 }
 
-type PaymentEventDbSchema = typeof paymentEventDbSchema
+type PostgresPaymentEventDbSchema = typeof postgresPaymentEventDbSchema
 
 export default postgresPaymentEventSchema
-export { postgresPaymentEventSchema, paymentEventDbSchema, paymentEventStatusEnum }
-export type { PaymentEventDbSchema }
+export { postgresPaymentEventSchema, postgresPaymentEventDbSchema, paymentEventStatusEnum }
+export type { PostgresPaymentEventDbSchema }

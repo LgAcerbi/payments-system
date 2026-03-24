@@ -1,16 +1,16 @@
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { PaymentEventDbSchema } from './payment-event.schema';
+import type { PostgresPaymentEventDbSchema } from './payment-event.schema';
 
 import { eq } from 'drizzle-orm';
-import { paymentEventDbSchema } from './payment-event.schema';
+import { postgresPaymentEventDbSchema } from './payment-event.schema';
 import { PaymentEvent } from '../../domain';
 import { PaymentEventRepository } from '../../application';
 
 class PostgresPaymentEventRepository implements PaymentEventRepository {
-    constructor(private readonly db: NodePgDatabase<PaymentEventDbSchema>) {}
+    constructor(private readonly db: NodePgDatabase<PostgresPaymentEventDbSchema>) {}
 
     async createPaymentEvent(paymentEvent: PaymentEvent) {
-        const [result] = await this.db.insert(paymentEventDbSchema.paymentEvents).values(paymentEvent).returning();
+        const [result] = await this.db.insert(postgresPaymentEventDbSchema.paymentEvents).values(paymentEvent).returning();
 
         return new PaymentEvent({
             ...result,
@@ -23,23 +23,23 @@ class PostgresPaymentEventRepository implements PaymentEventRepository {
         failureReason?: PaymentEvent['failureReason'],
     ) {
         await this.db
-            .update(paymentEventDbSchema.paymentEvents)
+            .update(postgresPaymentEventDbSchema.paymentEvents)
             .set({ status, failureReason })
-            .where(eq(paymentEventDbSchema.paymentEvents.id, id));
+            .where(eq(postgresPaymentEventDbSchema.paymentEvents.id, id));
     }
 
     async updatePaymentEventPaymentId(id: PaymentEvent['id'], paymentId: PaymentEvent['paymentId']) {
         await this.db
-            .update(paymentEventDbSchema.paymentEvents)
+            .update(postgresPaymentEventDbSchema.paymentEvents)
             .set({ paymentId })
-            .where(eq(paymentEventDbSchema.paymentEvents.id, id));
+            .where(eq(postgresPaymentEventDbSchema.paymentEvents.id, id));
     }
 
     async findPaymentEventByIdempotencyKey(idempotencyKey: PaymentEvent['idempotencyKey']) {
         const [result] = await this.db
             .select()
-            .from(paymentEventDbSchema.paymentEvents)
-            .where(eq(paymentEventDbSchema.paymentEvents.idempotencyKey, idempotencyKey));
+            .from(postgresPaymentEventDbSchema.paymentEvents)
+            .where(eq(postgresPaymentEventDbSchema.paymentEvents.idempotencyKey, idempotencyKey));
 
         if (!result) {
             return null;

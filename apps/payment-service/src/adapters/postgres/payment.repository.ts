@@ -1,16 +1,16 @@
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { PaymentDbSchema } from './payment.schema';
+import type { PostgresPaymentDbSchema } from './payment.schema';
 
 import { eq, and } from 'drizzle-orm';
 import { Payment } from '../../domain';
-import { paymentDbSchema } from './payment.schema';
+import { postgresPaymentDbSchema } from './payment.schema';
 import { PaymentRepository } from '../../application';
 
 class PostgresPaymentRepository implements PaymentRepository {
-    constructor(private readonly db: NodePgDatabase<PaymentDbSchema>) {}
+    constructor(private readonly db: NodePgDatabase<PostgresPaymentDbSchema>) {}
 
     async createPayment(payment: Payment): Promise<Payment> {
-        await this.db.insert(paymentDbSchema.payments).values(payment).returning();
+        await this.db.insert(postgresPaymentDbSchema.payments).values(payment).returning();
 
         return payment;
     }
@@ -18,8 +18,8 @@ class PostgresPaymentRepository implements PaymentRepository {
     async getPaymentById(id: string) {
         const [result] = await this.db
             .select()
-            .from(paymentDbSchema.payments)
-            .where(eq(paymentDbSchema.payments.id, id));
+            .from(postgresPaymentDbSchema.payments)
+            .where(eq(postgresPaymentDbSchema.payments.id, id));
 
         if (!result) {
             return null;
@@ -48,11 +48,11 @@ class PostgresPaymentRepository implements PaymentRepository {
     async getPaymentByProviderPaymentId(providerId: string, provider: Payment['provider']) {
         const [result] = await this.db
             .select()
-            .from(paymentDbSchema.payments)
+            .from(postgresPaymentDbSchema.payments)
             .where(
                 and(
-                    eq(paymentDbSchema.payments.providerPaymentId, providerId),
-                    eq(paymentDbSchema.payments.provider, provider),
+                    eq(postgresPaymentDbSchema.payments.providerPaymentId, providerId),
+                    eq(postgresPaymentDbSchema.payments.provider, provider),
                 ),
             );
 
@@ -83,8 +83,8 @@ class PostgresPaymentRepository implements PaymentRepository {
     async getPaymentByOrderId(orderId: string) {
         const [result] = await this.db
             .select()
-            .from(paymentDbSchema.payments)
-            .where(eq(paymentDbSchema.payments.orderId, orderId));
+            .from(postgresPaymentDbSchema.payments)
+            .where(eq(postgresPaymentDbSchema.payments.orderId, orderId));
 
         if (!result) {
             return null;
@@ -112,16 +112,16 @@ class PostgresPaymentRepository implements PaymentRepository {
 
     async confirmPaymentIntent(paymentId: string): Promise<void> {
         await this.db
-            .update(paymentDbSchema.payments)
+            .update(postgresPaymentDbSchema.payments)
             .set({ status: 'processing' })
-            .where(eq(paymentDbSchema.payments.id, paymentId));
+            .where(eq(postgresPaymentDbSchema.payments.id, paymentId));
     }
 
     async updatePaymentStatusById(paymentId: string, status: Payment['status']): Promise<void> {
         await this.db
-            .update(paymentDbSchema.payments)
+            .update(postgresPaymentDbSchema.payments)
             .set({ status })
-            .where(eq(paymentDbSchema.payments.id, paymentId));
+            .where(eq(postgresPaymentDbSchema.payments.id, paymentId));
     }
 
     async updatePaymentStatusByProviderPaymentId(
@@ -130,12 +130,12 @@ class PostgresPaymentRepository implements PaymentRepository {
         provider: Payment['provider'],
     ): Promise<void> {
         await this.db
-            .update(paymentDbSchema.payments)
+            .update(postgresPaymentDbSchema.payments)
             .set({ status })
             .where(
                 and(
-                    eq(paymentDbSchema.payments.providerPaymentId, providerPaymentId),
-                    eq(paymentDbSchema.payments.provider, provider),
+                    eq(postgresPaymentDbSchema.payments.providerPaymentId, providerPaymentId),
+                    eq(postgresPaymentDbSchema.payments.provider, provider),
                 ),
             );
     }
