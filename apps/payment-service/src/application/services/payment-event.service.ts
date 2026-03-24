@@ -5,7 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { NotFoundError, ConflictError } from '@workspace/errors';
 import { PaymentEvent } from '../../domain';
 
-const eventStatusDependencies = {
+const eventStatusesDependencies = {
     'payment-succeeded': ['processing'],
     'payment-processing': ['initiated'],
     'payment-failed': ['processing'],
@@ -71,8 +71,10 @@ class PaymentEventService {
             return;
         }
 
-        if (!eventStatusDependencies[paymentEvent.event].includes(payment.status)) {
-            const errorMessage = `Cannot set payment status to "${incomingPaymentStatus}" because payment is not in "${eventStatusDependencies[paymentEvent.event].join(', ').trim()}" statuses`;
+        const eventStatusDependencies = eventStatusesDependencies[paymentEvent.event];
+
+        if (eventStatusesDependencies[paymentEvent.event] && !eventStatusesDependencies[paymentEvent.event].includes(payment.status)) {
+            const errorMessage = `Cannot set payment status to "${incomingPaymentStatus}" because payment is not in "${eventStatusDependencies.join(', ').trim()}" statuses`;
 
             await this.paymentEventRepository.updatePaymentEventStatus(createdPaymentEvent.id, 'failed', errorMessage);
 
