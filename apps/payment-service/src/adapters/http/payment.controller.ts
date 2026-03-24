@@ -91,7 +91,7 @@ class PaymentController {
 
         this.server.route({
             method: 'GET',
-            url: '/payments/provider/:provider/:providerPaymentId',
+            url: '/payments/provider/:provider/id/:providerPaymentId',
             schema: {
                 params: z.object({ provider: z.enum(['stripe']), providerPaymentId: z.string() }),
                 response: {
