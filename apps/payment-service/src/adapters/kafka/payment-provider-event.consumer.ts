@@ -5,7 +5,7 @@ import { logger } from '@workspace/logger';
 import { ValidationError, ConflictError } from '@workspace/errors';
 import { paymentProviderEventDtoSchema } from '@workspace/payment';
 
-class PaymentProviderEventConsumer {
+class KafkaPaymentProviderEventConsumer {
     constructor(
         private readonly kafkaConsumer: Consumer,
         private readonly paymentEventService: PaymentEventService,
@@ -101,5 +101,5 @@ class PaymentProviderEventConsumer {
     }
 }
 
-export default PaymentProviderEventConsumer;
-export { PaymentProviderEventConsumer };
+export default KafkaPaymentProviderEventConsumer;
+export { KafkaPaymentProviderEventConsumer };
