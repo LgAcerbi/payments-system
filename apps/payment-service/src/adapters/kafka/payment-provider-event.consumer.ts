@@ -10,7 +10,10 @@ class PaymentProviderEventConsumer {
     constructor(
         private readonly kafkaConsumer: Consumer,
         private readonly paymentEventService: PaymentEventService,
-        private readonly paymentEventMapperRegistry: Map<Payment['provider'], PaymentEventMapper['toPaymentProviderEvent']>,
+        private readonly paymentEventMapperRegistry: Map<
+            Payment['provider'],
+            PaymentEventMapper['toPaymentProviderEvent']
+        >,
     ) {}
 
     private buildKafkaMessageId(topic: string, partition: number, offset: string): string {
@@ -41,6 +44,8 @@ class PaymentProviderEventConsumer {
                     try {
                         jsonParsedEventMessage = JSON.parse(eventMessage);
                     } catch (error) {
+                        void error;
+
                         throw new ValidationError(
                             `Invalid payment provider event-message: ${eventMessage} is not a valid JSON`,
                         );
