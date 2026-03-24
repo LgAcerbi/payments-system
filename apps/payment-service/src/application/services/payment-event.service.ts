@@ -22,10 +22,6 @@ class PaymentEventService {
         paymentEvent: Omit<PaymentEvent, 'id' | 'paymentId' | 'createdAt' | 'status' | 'failureReason'>,
         paymentData: Pick<Payment, 'status'>,
     ): Promise<void> {
-        if (paymentEvent.event === 'payment-initiated') {
-            return;
-        }
-
         const existingPaymentEvent = await this.paymentEventRepository.findPaymentEventByIdempotencyKey(
             paymentEvent.idempotencyKey,
         );
@@ -43,7 +39,14 @@ class PaymentEventService {
             createdAt: new Date(),
         });
 
+
         await this.paymentEventRepository.createPaymentEvent(createdPaymentEvent);
+
+        if (paymentEvent.event === 'payment-initiated') {
+            await this.paymentEventRepository.updatePaymentEventStatus(createdPaymentEvent.id, 'processed');
+
+            return;
+        }
 
         const payment = await this.paymentRepository.getPaymentByProviderPaymentId(
             paymentEvent.providerPaymentId,
