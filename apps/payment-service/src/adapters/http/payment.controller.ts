@@ -48,7 +48,7 @@ class HttpPaymentController {
         private readonly paymentService: PaymentService,
     ) {}
 
-    public async addRoutes() {
+    public addRoutes() {
         this.server.route({
             method: 'POST',
             url: '/payments',
