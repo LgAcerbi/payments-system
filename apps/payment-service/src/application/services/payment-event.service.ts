@@ -1,4 +1,5 @@
 import type { PaymentRepository, PaymentEventRepository } from '../';
+import type { Payment } from '../../domain';
 
 import { randomUUID } from 'node:crypto';
 import { NotFoundError, ConflictError } from '@workspace/errors';
@@ -17,7 +18,10 @@ class PaymentEventService {
         private readonly paymentEventRepository: PaymentEventRepository,
     ) {}
 
-    async handlePaymentEvent(paymentEvent: Omit<PaymentEvent, 'id' | 'paymentId' | 'createdAt'>): Promise<void> {
+    async handlePaymentEvent(
+        paymentEvent: Omit<PaymentEvent, 'id' | 'paymentId' | 'createdAt' | 'status' | 'failureReason'>,
+        paymentData: Pick<Payment, 'status'>,
+    ): Promise<void> {
         if (paymentEvent.event === 'payment-initiated') {
             return;
         }
@@ -30,7 +34,14 @@ class PaymentEventService {
             throw new ConflictError(`Payment event with idempotency key ${paymentEvent.idempotencyKey} already exists`);
         }
 
-        const createdPaymentEvent = new PaymentEvent({ ...paymentEvent, id: randomUUID(), paymentId: null, createdAt: new Date() });
+        const createdPaymentEvent = new PaymentEvent({
+            ...paymentEvent,
+            id: randomUUID(),
+            status: 'created',
+            paymentId: null,
+            failureReason: null,
+            createdAt: new Date(),
+        });
 
         await this.paymentEventRepository.createPaymentEvent(createdPaymentEvent);
 
@@ -40,26 +51,38 @@ class PaymentEventService {
         );
 
         if (!payment) {
-            throw new NotFoundError(`Payment with provider payment id ${paymentEvent.providerPaymentId} not found`);
+            const errorMessage = `Payment with provider payment id ${paymentEvent.providerPaymentId} not found`;
+
+            await this.paymentEventRepository.updatePaymentEventStatus(createdPaymentEvent.id, 'failed', errorMessage);
+
+            throw new NotFoundError(errorMessage);
         }
 
         await this.paymentEventRepository.updatePaymentEventPaymentId(createdPaymentEvent.id, payment.id);
 
-        if (paymentEvent.event === 'payment-succeeded' && payment.status === `${paymentEvent.status}`) {
+        const { status: incomingPaymentStatus } = paymentData;
+
+        if (paymentEvent.event === 'payment-succeeded' && payment.status === `${incomingPaymentStatus}`) {
+            await this.paymentEventRepository.updatePaymentEventStatus(createdPaymentEvent.id, 'processed');
+
             return;
         }
 
         if (!eventStatusDependencies[paymentEvent.event].includes(payment.status)) {
-            throw new ConflictError(
-                `Cannot set payment status to "${paymentEvent.status}" because payment is not in "${eventStatusDependencies[paymentEvent.event].join(', ').trim()}" statuses`,
-            );
+            const errorMessage = `Cannot set payment status to "${incomingPaymentStatus}" because payment is not in "${eventStatusDependencies[paymentEvent.event].join(', ').trim()}" statuses`;
+
+            await this.paymentEventRepository.updatePaymentEventStatus(createdPaymentEvent.id, 'failed', errorMessage);
+
+            throw new ConflictError(errorMessage);
         }
 
         await this.paymentRepository.updatePaymentStatusByProviderPaymentId(
             paymentEvent.providerPaymentId,
-            paymentEvent.status,
+            incomingPaymentStatus,
             paymentEvent.provider,
         );
+
+        await this.paymentEventRepository.updatePaymentEventStatus(createdPaymentEvent.id, 'processed');
     }
 }
 

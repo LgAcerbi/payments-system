@@ -7,11 +7,14 @@ type PaymentEvents =
     | 'payment-failed'
     | 'payment-canceled';
 
+type PaymentEventStatus = 'created' | 'processed' | 'failed';
+
 class PaymentEvent {
     public readonly id: string;
     public readonly paymentId: Payment['id'] | null;
     public readonly event: PaymentEvents;
-    public readonly status: Payment['status'];
+    public readonly status: PaymentEventStatus;
+    public readonly failureReason: string | null;
     public readonly idempotencyKey: string;
     public readonly provider: Payment['provider'];
     public readonly providerEventId: string;
@@ -25,6 +28,7 @@ class PaymentEvent {
         paymentId,
         event,
         status,
+        failureReason,
         idempotencyKey,
         provider,
         providerEventId,
@@ -36,7 +40,8 @@ class PaymentEvent {
         id: string;
         paymentId: Payment['id'] | null;
         event: PaymentEvents;
-        status: Payment['status'];
+        status: PaymentEventStatus;
+        failureReason: string | null;
         idempotencyKey: string;
         provider: Payment['provider'];
         providerEventId: string;
@@ -49,6 +54,7 @@ class PaymentEvent {
         this.paymentId = paymentId;
         this.event = event;
         this.status = status;
+        this.failureReason = failureReason;
         this.idempotencyKey = idempotencyKey;
         this.provider = provider;
         this.providerEventId = providerEventId;
