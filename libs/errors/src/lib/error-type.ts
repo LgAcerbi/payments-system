@@ -1,5 +1,5 @@
 /**
- * Error types used by application layers. The HTTP layer maps these to status codes
+ * Error types used by application layers. The HTTP/Kafka (Adapter) layers maps these to status codes
  * (e.g. NOT_FOUND -> 404) so domain/application code stays free of HTTP concerns.
  */
 export const ErrorType = {
