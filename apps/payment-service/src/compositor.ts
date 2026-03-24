@@ -9,8 +9,7 @@ import {
     StripePaymentEventMapper,
     PaymentProviderGatewayResolverAdapter,
     PaymentEventMapperResolverAdapter,
-    paymentDbSchema,
-    paymentEventDbSchema,
+    postgresDbSchema,
     createHttpServer,
 } from './adapters';
 import { PaymentEventService, PaymentService } from './application';
@@ -26,7 +25,7 @@ export type ComposeOptions = {
 export async function compose(options: ComposeOptions): Promise<{ httpServer: Awaited<ReturnType<typeof createHttpServer>>, eventConsumers: { startConsume: () => Promise<void> }[] }> {
     const { privateStripeKey, databaseUrl, kafkaBrokers, httpServerPort, httpServerHost } = options;
 
-    const pgClient = new PgDrizzleClient(databaseUrl, { ...paymentDbSchema, ...paymentEventDbSchema })
+    const pgClient = new PgDrizzleClient(databaseUrl, { ...postgresDbSchema })
     const dbInstance = pgClient.getDbInstance();
 
     const stripePaymentProviderGateway = new StripePaymentProviderGateway(privateStripeKey);

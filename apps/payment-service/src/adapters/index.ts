@@ -5,6 +5,7 @@ export * from './postgres/payment.repository';
 export * from './postgres/payment-event.repository';
 export * from './postgres/payment.schema';
 export * from './postgres/payment-event.schema';
+export * from './postgres/db.schema';
 export * from './stripe/payment-provider.gateway';
 export * from './stripe/payment-event.mapper';
 export * from './resolvers/payment-provider-gateway.resolver';
