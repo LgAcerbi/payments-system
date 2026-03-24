@@ -1,7 +1,8 @@
 import type { PaymentRepository, PaymentEventRepository } from '../';
-import type { PaymentEvent } from '../../domain';
 
+import { randomUUID } from 'node:crypto';
 import { NotFoundError, ConflictError } from '@workspace/errors';
+import { PaymentEvent } from '../../domain';
 
 const eventStatusDependencies = {
     'payment-succeeded': ['processing'],
@@ -16,18 +17,22 @@ class PaymentEventService {
         private readonly paymentEventRepository: PaymentEventRepository,
     ) {}
 
-    async handlePaymentEvent(paymentEvent: PaymentEvent): Promise<void> {
+    async handlePaymentEvent(paymentEvent: Omit<PaymentEvent, 'id' | 'paymentId' | 'createdAt'>): Promise<void> {
         if (paymentEvent.event === 'payment-initiated') {
             return;
         }
 
-        const existingPaymentEvent = await this.paymentEventRepository.findPaymentEventByIdempotencyKey(paymentEvent.idempotencyKey);
+        const existingPaymentEvent = await this.paymentEventRepository.findPaymentEventByIdempotencyKey(
+            paymentEvent.idempotencyKey,
+        );
 
         if (existingPaymentEvent) {
             throw new ConflictError(`Payment event with idempotency key ${paymentEvent.idempotencyKey} already exists`);
         }
 
-        await this.paymentEventRepository.createPaymentEvent(paymentEvent);
+        const createdPaymentEvent = new PaymentEvent({ ...paymentEvent, id: randomUUID(), paymentId: null, createdAt: new Date() });
+
+        await this.paymentEventRepository.createPaymentEvent(createdPaymentEvent);
 
         const payment = await this.paymentRepository.getPaymentByProviderPaymentId(
             paymentEvent.providerPaymentId,
@@ -37,6 +42,8 @@ class PaymentEventService {
         if (!payment) {
             throw new NotFoundError(`Payment with provider payment id ${paymentEvent.providerPaymentId} not found`);
         }
+
+        await this.paymentEventRepository.updatePaymentEventPaymentId(createdPaymentEvent.id, payment.id);
 
         if (paymentEvent.event === 'payment-succeeded' && payment.status === `${paymentEvent.status}`) {
             return;
