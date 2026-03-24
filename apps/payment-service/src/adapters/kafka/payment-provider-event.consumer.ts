@@ -1,14 +1,12 @@
 import type { Consumer } from 'kafkajs';
-import type { PaymentService } from '../../application';
+import type { PaymentEventService } from '../../application';
 
 import { logger } from '@workspace/logger';
 import { ValidationError } from '@workspace/errors';
 import { paymentProviderEventDtoSchema } from '@workspace/payment';
 import { StripePaymentEventMapper } from '../stripe/stripe-payment-event.mapper';
 
-const eventProviderMapperFunctionMap = new Map([
-    ['stripe', StripePaymentEventMapper.toPaymentProviderEvent],
-]);
+const eventProviderMapperFunctionMap = new Map([['stripe', StripePaymentEventMapper.toPaymentProviderEvent]]);
 
 const processableEvents = [
     'payment-created',
@@ -21,14 +19,10 @@ const processableEvents = [
 class PaymentProviderEventConsumer {
     constructor(
         private readonly kafkaConsumer: Consumer,
-        private readonly paymentService: PaymentService,
+        private readonly paymentEventService: PaymentEventService,
     ) {}
 
-    private buildKafkaMessageId(
-        topic: string,
-        partition: number,
-        offset: string,
-    ): string {
+    private buildKafkaMessageId(topic: string, partition: number, offset: string): string {
         return `${topic}:${partition}:${offset}`;
     }
 
@@ -36,11 +30,7 @@ class PaymentProviderEventConsumer {
         await this.kafkaConsumer.run({
             eachMessage: async ({ topic, partition, message }) => {
                 try {
-                    const kafkaMessageId = this.buildKafkaMessageId(
-                        topic,
-                        partition,
-                        message.offset,
-                    );
+                    const kafkaMessageId = this.buildKafkaMessageId(topic, partition, message.offset);
 
                     logger.info(
                         {
@@ -52,9 +42,7 @@ class PaymentProviderEventConsumer {
                     const eventMessage = message.value?.toString();
 
                     if (!eventMessage) {
-                        throw new ValidationError(
-                            'Empty payment provider event-message',
-                        );
+                        throw new ValidationError('Empty payment provider event-message');
                     }
 
                     let jsonParsedEventMessage: unknown;
@@ -67,8 +55,7 @@ class PaymentProviderEventConsumer {
                         );
                     }
 
-                    const parsedEvent =
-                        paymentProviderEventDtoSchema.safeParse(jsonParsedEventMessage);
+                    const parsedEvent = paymentProviderEventDtoSchema.safeParse(jsonParsedEventMessage);
 
                     if (!parsedEvent.success) {
                         throw new ValidationError(
@@ -76,24 +63,15 @@ class PaymentProviderEventConsumer {
                         );
                     }
 
-                    const eventProviderMapperFunction =
-                        eventProviderMapperFunctionMap.get(
-                            parsedEvent.data.provider,
-                        );
+                    const eventProviderMapperFunction = eventProviderMapperFunctionMap.get(parsedEvent.data.provider);
 
                     if (!eventProviderMapperFunction) {
-                        throw new ValidationError(
-                            `Invalid payment provider: ${parsedEvent.data.provider}`,
-                        );
+                        throw new ValidationError(`Invalid payment provider: ${parsedEvent.data.provider}`);
                     }
 
-                    const providerPaymentEvent = eventProviderMapperFunction(
-                        parsedEvent.data,
-                    );
+                    const providerPaymentEvent = eventProviderMapperFunction(parsedEvent.data);
 
-                    if (
-                        !processableEvents.includes(providerPaymentEvent.event)
-                    ) {
+                    if (!processableEvents.includes(providerPaymentEvent.event)) {
                         logger.info(
                             {
                                 kafkaMessageId,
@@ -110,10 +88,7 @@ class PaymentProviderEventConsumer {
                         'Validates payment provider event message',
                     );
 
-                    await this.paymentService.updatePaymentStatusByProviderPaymentId(
-                        providerPaymentEvent.providerPaymentId,
-                        providerPaymentEvent.status,
-                    );
+                    await this.paymentEventService.handlePaymentEvent(providerPaymentEvent);
 
                     logger.info(
                         {
