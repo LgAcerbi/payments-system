@@ -35,11 +35,15 @@ class PostgresPaymentEventRepository implements PaymentEventRepository {
             .where(eq(paymentEventDbSchema.paymentEvents.id, id));
     }
 
-    async findPaymentEventByIdempotencyKey(idempotencyKey: PaymentEvent['idempotencyKey']): Promise<PaymentEvent> {
+    async findPaymentEventByIdempotencyKey(idempotencyKey: PaymentEvent['idempotencyKey']) {
         const [result] = await this.db
             .select()
             .from(paymentEventDbSchema.paymentEvents)
             .where(eq(paymentEventDbSchema.paymentEvents.idempotencyKey, idempotencyKey));
+
+        if (!result) {
+            return null;
+        }
 
         return result;
     }
