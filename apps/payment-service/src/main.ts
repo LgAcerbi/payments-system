@@ -35,6 +35,7 @@ async function main() {
         databaseUrl: DATABASE_URL,
         kafkaBrokers,
         httpServerPort: port,
+        httpServerHost: HOST,
     })
 
     httpServer.listen({ port, host: HOST }, (err: Error | null, address: string) => {
