@@ -2,11 +2,12 @@ import type { createHttpServer } from './server';
 import type { PaymentService } from '../../application';
 
 import { z } from 'zod';
+import { httpErrorSchema } from '@workspace/http';
 
 const paymentStatusSchema = z.enum(['initiated', 'processing', 'succeeded', 'failed', 'canceled']);
 
 const paymentResponseSchema = z.object({
-    id: z.string().uuid(),
+    id: z.uuid(),
     amount: z
         .number()
         .int()
@@ -55,7 +56,11 @@ class HttpPaymentController {
             schema: {
                 body: createPaymentBodySchema,
                 response: {
-                    201: z.object({ id: z.string().uuid() }),
+                    201: z.object({ id: z.uuid() }),
+                    400: httpErrorSchema,
+                    404: httpErrorSchema,
+                    409: httpErrorSchema,
+                    500: httpErrorSchema,
                 },
             },
             handler: async (request, reply) => {
@@ -72,18 +77,15 @@ class HttpPaymentController {
             method: 'GET',
             url: '/payments/:id',
             schema: {
-                params: z.object({ id: z.string().uuid() }),
+                params: z.object({ id: z.uuid() }),
                 response: {
                     200: paymentResponseSchema,
-                    204: z.null(),
+                    404: httpErrorSchema,
+                    500: httpErrorSchema,
                 },
             },
             handler: async (request, reply) => {
                 const payment = await this.paymentService.getPaymentById(request.params.id);
-
-                if (!payment) {
-                    return reply.status(204).send(null);
-                }
 
                 return reply.status(200).send(payment);
             },
@@ -96,15 +98,12 @@ class HttpPaymentController {
                 params: z.object({ provider: z.enum(['stripe']), providerPaymentId: z.string() }),
                 response: {
                     200: paymentResponseSchema,
-                    204: z.null(),
+                    404: httpErrorSchema,
+                    500: httpErrorSchema,
                 },
             },
             handler: async (request, reply) => {
                 const payment = await this.paymentService.getPaymentByProviderPaymentId(request.params.providerPaymentId, request.params.provider);
-
-                if (!payment) {
-                    return reply.status(204).send(null);
-                }
 
                 return reply.status(200).send(payment);
             },
@@ -117,15 +116,12 @@ class HttpPaymentController {
                 params: z.object({ orderId: z.string() }),
                 response: {
                     200: paymentResponseSchema,
-                    204: z.null(),
+                    404: httpErrorSchema,
+                    500: httpErrorSchema,
                 },
             },
             handler: async (request, reply) => {
                 const payment = await this.paymentService.getPaymentByOrderId(request.params.orderId);
-
-                if (!payment) {
-                    return reply.status(204).send(null);
-                }
 
                 return reply.status(200).send(payment);
             },
@@ -138,7 +134,9 @@ class HttpPaymentController {
                 params: z.object({ id: z.string().uuid() }),
                 body: z.object({ paymentMethod: z.string() }),
                 response: {
-                    200: z.object({ id: z.string().uuid() }),
+                    200: z.object({ id: z.uuid() }),
+                    404: httpErrorSchema,
+                    500: httpErrorSchema,
                 },
             },
             handler: async (request, reply) => {
