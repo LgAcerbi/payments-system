@@ -23,6 +23,8 @@
       "@workspace/errors": ["libs/errors/src/index.ts"],
       "@workspace/kafka": ["libs/kafka/src/index.ts"],
       "@workspace/logger": ["libs/logger/src/index.ts"],
+      "@workspace/payment": ["libs/payment/src/index.ts"],
+      "@workspace/utils": ["libs/utils/src/index.ts"],
       "drizzle-orm": ["node_modules/drizzle-orm"],
       "drizzle-orm/*": ["node_modules/drizzle-orm/*"]
     }
