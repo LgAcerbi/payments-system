@@ -18,9 +18,13 @@ class PostgresPaymentRepository implements PaymentRepository {
         return payment;
     }
 
-    async getPaymentById(id: string): Promise<Payment> {
+    async getPaymentById(id: string) {
         const [result] = await this.db.select().from(paymentDbSchema.payments).where(eq(paymentDbSchema.payments.id, id));
         
+        if (!result) {
+            return null;
+        }
+
         const payment = new Payment(
             {
                 id: result.id,
@@ -43,9 +47,13 @@ class PostgresPaymentRepository implements PaymentRepository {
         return payment;
     }
 
-    async getPaymentByProviderPaymentId(providerId: string): Promise<Payment> {
+    async getPaymentByProviderPaymentId(providerId: string) {
         const [result] = await this.db.select().from(paymentDbSchema.payments).where(eq(paymentDbSchema.payments.providerPaymentId, providerId));
         
+        if (!result) {
+            return null;
+        }
+
         const payment = new Payment(
             {
                 id: result.id,
@@ -68,9 +76,13 @@ class PostgresPaymentRepository implements PaymentRepository {
         return payment;
     }
 
-    async getPaymentByOrderId(orderId: string): Promise<Payment> {
+    async getPaymentByOrderId(orderId: string) {
         const [result] = await this.db.select().from(paymentDbSchema.payments).where(eq(paymentDbSchema.payments.orderId, orderId));
         
+        if (!result) {
+            return null;
+        }
+
         const payment = new Payment(
             {
                 id: result.id,
