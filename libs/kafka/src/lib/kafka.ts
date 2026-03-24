@@ -2,15 +2,15 @@ import type { Producer, Consumer } from 'kafkajs';
 
 import { Kafka } from 'kafkajs';
 
-type KafkaNodeClientOptions = {
+type KafkaClientOptions = {
     brokers: string[];
     clientId: string;
 };
 
-class KafkaNodeClient {
+class KafkaClient {
     private readonly kafka: Kafka;
 
-    constructor({ brokers, clientId }: KafkaNodeClientOptions) {
+    constructor({ brokers, clientId }: KafkaClientOptions) {
         if (!clientId) {
             throw new Error('Missing Kafka client id');
         }
@@ -90,11 +90,11 @@ class KafkaNodeClient {
     }
 }
 
-function createKafkaNodeClient(
-    options: KafkaNodeClientOptions,
-): KafkaNodeClient {
-    return new KafkaNodeClient(options);
+function createKafkaClient(
+    options: KafkaClientOptions,
+): KafkaClient {
+    return new KafkaClient(options);
 }
 
-export { createKafkaNodeClient, KafkaNodeClient };
-export type { KafkaNodeClientOptions };
+export { createKafkaClient, KafkaClient };
+export type { KafkaClientOptions };
