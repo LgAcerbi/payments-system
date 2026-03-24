@@ -1,7 +1,46 @@
-import type { FastifyRequest } from 'fastify';
 import type { createHttpServer } from './server';
 import type { PaymentService } from '../../application';
-import type { Payment } from '../../domain';
+
+import { z } from 'zod';
+
+const paymentStatusSchema = z.enum(['initiated', 'processing', 'succeeded', 'failed', 'canceled']);
+
+const paymentResponseSchema = z.object({
+    id: z.string().uuid(),
+    amount: z
+        .number()
+        .int()
+        .describe('Amount in the smallest unit of currency (e.g. cents for USD).'),
+    description: z.string().nullable(),
+    amountRefunded: z.number().int().nullable(),
+    currency: z.string(),
+    status: paymentStatusSchema,
+    orderId: z.string(),
+    method: z.string(),
+    provider: z.enum(['stripe']),
+    providerPaymentId: z.string(),
+    providerData: z.unknown(),
+    idempotencyKey: z.string(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+});
+
+const createPaymentBodySchema = z.object({
+    payment: z.object({
+        amount: z
+            .number()
+            .int()
+            .describe(
+                'Amount in the smallest unit of currency (e.g. cents for USD). Consumers format for display.',
+            ),
+        currency: z.string(),
+        orderId: z.string(),
+        method: z.string(),
+        provider: z.enum(['stripe']),
+        description: z.string().nullable(),
+    }),
+    idempotencyKey: z.string(),
+});
 
 class PaymentController {
     constructor(
@@ -14,36 +53,16 @@ class PaymentController {
             method: 'POST',
             url: '/payments',
             schema: {
-                body: {
-                    type: 'object',
-                    properties: {
-                        payment: {
-                            type: 'object',
-                            properties: {
-                                amount: {
-                                    type: 'integer',
-                                    description:
-                                        'Amount in the smallest unit of currency (e.g. cents for USD). Consumers format for display.',
-                                },
-                                currency: { type: 'string' },
-                                orderId: { type: 'string' },
-                                method: { type: 'string' },
-                            },
-                        },
-                        idempotencyKey: { type: 'string' },
-                    },
-                },
+                body: createPaymentBodySchema,
                 response: {
-                    201: {
-                        type: 'object',
-                        properties: {
-                            id: { type: 'string' },
-                        },
-                    },
+                    201: z.object({ id: z.string().uuid() }),
                 },
             },
-            handler: async (request: FastifyRequest<{ Body: { payment: Payment, idempotencyKey: string } }>, reply) => {
-                const payment = await this.paymentService.createPayment(request.body.payment, request.body.idempotencyKey);
+            handler: async (request, reply) => {
+                const payment = await this.paymentService.createPayment(
+                    request.body.payment,
+                    request.body.idempotencyKey,
+                );
 
                 return reply.status(201).send({ id: payment.id });
             },
@@ -53,40 +72,17 @@ class PaymentController {
             method: 'GET',
             url: '/payments/:id',
             schema: {
+                params: z.object({ id: z.string().uuid() }),
                 response: {
-                    200: {
-                        type: 'object',
-                        properties: {
-                            id: { type: 'string' },
-                            amount: {
-                                type: 'integer',
-                                description:
-                                    'Amount in the smallest unit of currency (e.g. cents for USD).',
-                            },
-                            currency: { type: 'string' },
-                            orderId: { type: 'string' },
-                            method: { type: 'string' },
-                            status: { type: 'string' },
-                            createdAt: { type: 'string', format: 'date-time' },
-                            updatedAt: { type: 'string', format: 'date-time' },
-                        },
-                    },
-                    204: {
-                        type: 'null',
-                    }
-                },
-                params: {
-                    type: 'object',
-                    properties: {
-                        id: { type: 'string', format: 'uuid' },
-                    },
+                    200: paymentResponseSchema,
+                    204: z.null(),
                 },
             },
-            handler: async (request: FastifyRequest<{ Params: { id: string } }>, reply) => {
+            handler: async (request, reply) => {
                 const payment = await this.paymentService.getPaymentById(request.params.id);
 
                 if (!payment) {
-                    return reply.status(204).send();
+                    return reply.status(204).send(null);
                 }
 
                 return reply.status(200).send(payment);
@@ -95,64 +91,40 @@ class PaymentController {
 
         this.server.route({
             method: 'GET',
-            url: '/payments/intent/:intentId',
+            url: '/payments/provider/:providerPaymentId',
             schema: {
+                params: z.object({ providerPaymentId: z.string() }),
                 response: {
-                    200: {
-                        type: 'object',
-                        properties: {
-                            id: { type: 'string' },
-                        },
-                    },
-                    204: {
-                        type: 'null',
-                    }
-                },
-                params: {
-                    type: 'object',
-                    properties: {
-                        intentId: { type: 'string' },
-                    },
+                    200: paymentResponseSchema,
+                    204: z.null(),
                 },
             },
-            handler: async (request: FastifyRequest<{ Params: { intentId: string } }>, reply) => {
-                const payment = await this.paymentService.getPaymentByProviderId(request.params.intentId);
+            handler: async (request, reply) => {
+                const payment = await this.paymentService.getPaymentByProviderPaymentId(request.params.providerPaymentId);
 
                 if (!payment) {
-                    return reply.status(204).send();
+                    return reply.status(204).send(null);
                 }
 
                 return reply.status(200).send(payment);
             },
         });
-        
+
         this.server.route({
             method: 'GET',
             url: '/payments/order/:orderId',
             schema: {
+                params: z.object({ orderId: z.string() }),
                 response: {
-                    200: {
-                        type: 'object',
-                        properties: {
-                            id: { type: 'string' },
-                        },
-                    },
-                    204: {
-                        type: 'null',
-                    }
-                },
-                params: {
-                    type: 'object',
-                    properties: {
-                        orderId: { type: 'string' },
-                    },
+                    200: paymentResponseSchema,
+                    204: z.null(),
                 },
             },
-            handler: async (request: FastifyRequest<{ Params: { orderId: string } }>, reply) => {
+            handler: async (request, reply) => {
                 const payment = await this.paymentService.getPaymentByOrderId(request.params.orderId);
 
                 if (!payment) {
-                    return reply.status(204).send();
+                    return reply.status(204).send(null);
                 }
 
                 return reply.status(200).send(payment);
@@ -163,28 +135,13 @@ class PaymentController {
             method: 'POST',
             url: '/payments/:id/confirm',
             schema: {
-                params: {
-                    type: 'object',
-                    properties: {
-                        id: { type: 'string', format: 'uuid' },
-                    },
-                },
-                body: {
-                    type: 'object',
-                    properties: {
-                        paymentMethod: { type: 'string' },
-                    },
-                },
+                params: z.object({ id: z.string().uuid() }),
+                body: z.object({ paymentMethod: z.string() }),
                 response: {
-                    200: {
-                        type: 'object',
-                        properties: {
-                            id: { type: 'string' },
-                        },
-                    },
+                    200: z.object({ id: z.string().uuid() }),
                 },
             },
-            handler: async (request: FastifyRequest<{ Params: { id: string }, Body: { paymentMethod: string } }>, reply) => {
+            handler: async (request, reply) => {
                 await this.paymentService.confirmPaymentIntent(request.params.id, request.body.paymentMethod);
 
                 return reply.status(200).send({ id: request.params.id });
