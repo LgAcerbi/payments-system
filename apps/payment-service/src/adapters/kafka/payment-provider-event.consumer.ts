@@ -8,14 +8,6 @@ import { StripePaymentEventMapper } from '../stripe/stripe-payment-event.mapper'
 
 const eventProviderMapperFunctionMap = new Map([['stripe', StripePaymentEventMapper.toPaymentProviderEvent]]);
 
-const processableEvents = [
-    'payment-created',
-    'payment-succeeded',
-    'payment-processing',
-    'payment-failed',
-    'payment-canceled',
-];
-
 class PaymentProviderEventConsumer {
     constructor(
         private readonly kafkaConsumer: Consumer,
@@ -70,16 +62,6 @@ class PaymentProviderEventConsumer {
                     }
 
                     const providerPaymentEvent = eventProviderMapperFunction(parsedEvent.data);
-
-                    if (!processableEvents.includes(providerPaymentEvent.event)) {
-                        logger.info(
-                            {
-                                kafkaMessageId,
-                            },
-                            `Skipping non-processable payment provider event: ${providerPaymentEvent.event}`,
-                        );
-                        return;
-                    }
 
                     logger.info(
                         {
