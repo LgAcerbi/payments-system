@@ -30,7 +30,7 @@ async function main() {
         throw new Error("KAFKA_BROKERS must include at least one broker")
     }
 
-    const { httpServer } = await compose({
+    const { httpServer, eventConsumers } = await compose({
         privateStripeKey: PRIVATE_STRIPE_KEY,
         databaseUrl: DATABASE_URL,
         kafkaBrokers,
@@ -45,6 +45,10 @@ async function main() {
         }
         logger.info(`payment-service running on ${address}`)
     })
+
+    for (const eventConsumer of eventConsumers) {
+        await eventConsumer.startConsume()
+    }
 }
 
 main()
