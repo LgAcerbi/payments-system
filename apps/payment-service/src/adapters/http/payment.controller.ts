@@ -42,7 +42,7 @@ const createPaymentBodySchema = z.object({
     idempotencyKey: z.string(),
 });
 
-class PaymentController {
+class HttpPaymentController {
     constructor(
         private readonly server: Awaited<ReturnType<typeof createHttpServer>>,
         private readonly paymentService: PaymentService,
@@ -150,5 +150,5 @@ class PaymentController {
     }
 }
 
-export default PaymentController;
-export { PaymentController };
+export default HttpPaymentController;
+export { HttpPaymentController };
