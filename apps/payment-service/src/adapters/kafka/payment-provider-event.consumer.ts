@@ -57,10 +57,6 @@ class PaymentProviderEventConsumer {
 
                     const eventProviderMapperFunction = this.paymentEventMapperResolver.resolve(parsedEvent.data.provider);
 
-                    if (!eventProviderMapperFunction) {
-                        throw new ValidationError(`Invalid payment provider: ${parsedEvent.data.provider}`);
-                    }
-
                     const { paymentEvent, paymentData } = eventProviderMapperFunction(parsedEvent.data);
 
                     logger.info(
