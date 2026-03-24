@@ -44,13 +44,8 @@ class PaymentService {
     }
 
     async confirmPaymentIntent(paymentId: string, paymentMethodId: string): Promise<void> {
-
-        const payment = await this.paymentRepository.getPaymentById(paymentId);
-
-        if (!payment) {
-            throw new NotFoundError('Payment not found');
-        }
-
+        const payment = await this.getPaymentById(paymentId);
+        
         const paymentProviderGateway = this.paymentProviderGatewayResolver.resolve(payment.provider);
         
         await paymentProviderGateway.confirmPaymentIntent(payment.providerPaymentId, paymentMethodId);
@@ -58,11 +53,11 @@ class PaymentService {
         await this.paymentRepository.confirmPaymentIntent(paymentId);
     }
 
-    async getPaymentById(id: string): Promise<Payment | null> {
+    async getPaymentById(id: string): Promise<Payment> {
         const payment = await this.paymentRepository.getPaymentById(id);
 
         if (!payment) {
-            return null;
+            throw new NotFoundError('Payment not found');
         }
 
         return payment;
@@ -71,21 +66,21 @@ class PaymentService {
     async getPaymentByProviderPaymentId(
         providerPaymentId: string,
         provider: Payment['provider'],
-    ): Promise<Payment | null> {
+    ): Promise<Payment> {
         const payment = await this.paymentRepository.getPaymentByProviderPaymentId(providerPaymentId, provider);
 
         if (!payment) {
-            return null;
+            throw new NotFoundError('Payment not found');
         }
 
         return payment;
     }
 
-    async getPaymentByOrderId(orderId: string): Promise<Payment | null> {
+    async getPaymentByOrderId(orderId: string): Promise<Payment> {
         const payment = await this.paymentRepository.getPaymentByOrderId(orderId);
 
         if (!payment) {
-            return null;
+            throw new NotFoundError('Payment not found');
         }
 
         return payment;
