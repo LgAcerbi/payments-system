@@ -2,7 +2,7 @@ import type { PaymentProviderGateway } from '../../application/ports/payment.gat
 
 import { Stripe as StripeLib } from 'stripe';
 
-class StripePaymentGateway implements PaymentProviderGateway {
+class StripePaymentProviderGateway implements PaymentProviderGateway {
     private readonly stripeInstance: StripeLib;
 
     constructor(privateStripeKey: string) {
@@ -25,5 +25,5 @@ class StripePaymentGateway implements PaymentProviderGateway {
     }
 }
 
-export default StripePaymentGateway;
-export { StripePaymentGateway };
+export default StripePaymentProviderGateway;
+export { StripePaymentProviderGateway };
