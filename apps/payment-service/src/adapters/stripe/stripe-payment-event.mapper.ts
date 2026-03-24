@@ -1,22 +1,15 @@
-import type { Payment } from '../../domain';
+import type { Payment, PaymentEvent } from '../../domain';
 import type { PaymentProviderEventDto } from '@workspace/payment';
 
 import { ValidationError } from '@workspace/errors';
 
-type PaymentProviderEvents =
-    | 'payment-created'
-    | 'payment-succeeded'
-    | 'payment-processing'
-    | 'payment-failed'
-    | 'payment-canceled';
-
 const stripeEventMap = new Map<
     string,
-    { event: PaymentProviderEvents; status: Payment['status'] }
+    { event: PaymentEvent['event']; status: Payment['status'] }
 >([
     [
         'payment_intent.created',
-        { event: 'payment-created', status: 'initiated' },
+        { event: 'payment-initiated', status: 'initiated' },
     ],
     [
         'payment_intent.succeeded',
@@ -36,21 +29,10 @@ const stripeEventMap = new Map<
     ],
 ]);
 
-type StripePaymentEvent = {
-    provider: 'stripe';
-    event: PaymentProviderEvents;
-    status: Payment['status'];
-    idempotencyKey: string;
-    providerEventId: string;
-    providerPaymentId: string;
-    providerRawPayload: unknown;
-    occurredAt: Date;
-};
-
 class StripePaymentEventMapper {
     public static toPaymentProviderEvent(
         paymentProviderEvent: PaymentProviderEventDto,
-    ): StripePaymentEvent {
+    ): Omit<PaymentEvent, 'id' | 'paymentId' | 'createdAt'> {
         const stripeEvent = stripeEventMap.get(paymentProviderEvent.event);
 
         if (!stripeEvent) {
