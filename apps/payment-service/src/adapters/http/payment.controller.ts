@@ -91,16 +91,16 @@ class PaymentController {
 
         this.server.route({
             method: 'GET',
-            url: '/payments/provider/:providerPaymentId',
+            url: '/payments/provider/:provider/:providerPaymentId',
             schema: {
-                params: z.object({ providerPaymentId: z.string() }),
+                params: z.object({ provider: z.enum(['stripe']), providerPaymentId: z.string() }),
                 response: {
                     200: paymentResponseSchema,
                     204: z.null(),
                 },
             },
             handler: async (request, reply) => {
-                const payment = await this.paymentService.getPaymentByProviderPaymentId(request.params.providerPaymentId);
+                const payment = await this.paymentService.getPaymentByProviderPaymentId(request.params.providerPaymentId, request.params.provider);
 
                 if (!payment) {
                     return reply.status(204).send(null);

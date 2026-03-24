@@ -49,8 +49,8 @@ class PaymentService {
         return payment;
     }
 
-    async getPaymentByProviderId(providerId: string): Promise<Payment | null> {
-        const payment = await this.paymentRepository.getPaymentByProviderId(providerId);
+    async getPaymentByProviderPaymentId(providerPaymentId: string, provider: Payment['provider']): Promise<Payment | null> {
+        const payment = await this.paymentRepository.getPaymentByProviderPaymentId(providerPaymentId, provider);
 
         if (!payment) {
             return null;
