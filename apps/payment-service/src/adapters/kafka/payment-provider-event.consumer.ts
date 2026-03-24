@@ -1,17 +1,16 @@
 import type { Consumer } from 'kafkajs';
-import type { PaymentEventService } from '../../application';
+import type { Payment } from '../../domain';
+import type { PaymentEventMapper, PaymentEventService } from '../../application';
 
 import { logger } from '@workspace/logger';
 import { ValidationError, ConflictError } from '@workspace/errors';
 import { paymentProviderEventDtoSchema } from '@workspace/payment';
-import { StripePaymentEventMapper } from '../stripe/stripe-payment-event.mapper';
-
-const eventProviderMapperFunctionMap = new Map([['stripe', StripePaymentEventMapper.toPaymentProviderEvent]]);
 
 class PaymentProviderEventConsumer {
     constructor(
         private readonly kafkaConsumer: Consumer,
         private readonly paymentEventService: PaymentEventService,
+        private readonly paymentEventMapperRegistry: Map<Payment['provider'], PaymentEventMapper['toPaymentProviderEvent']>,
     ) {}
 
     private buildKafkaMessageId(topic: string, partition: number, offset: string): string {
@@ -55,13 +54,13 @@ class PaymentProviderEventConsumer {
                         );
                     }
 
-                    const eventProviderMapperFunction = eventProviderMapperFunctionMap.get(parsedEvent.data.provider);
+                    const eventProviderMapperFunction = this.paymentEventMapperRegistry.get(parsedEvent.data.provider);
 
                     if (!eventProviderMapperFunction) {
                         throw new ValidationError(`Invalid payment provider: ${parsedEvent.data.provider}`);
                     }
 
-                    const providerPaymentEvent = eventProviderMapperFunction(parsedEvent.data);
+                    const { paymentEvent, paymentData } = eventProviderMapperFunction(parsedEvent.data);
 
                     logger.info(
                         {
@@ -70,7 +69,7 @@ class PaymentProviderEventConsumer {
                         'Validates payment provider event message',
                     );
 
-                    await this.paymentEventService.handlePaymentEvent(providerPaymentEvent);
+                    await this.paymentEventService.handlePaymentEvent(paymentEvent, paymentData);
 
                     logger.info(
                         {
