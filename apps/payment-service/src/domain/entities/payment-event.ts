@@ -9,7 +9,7 @@ type PaymentEvents =
 
 class PaymentEvent {
     public readonly id: string;
-    public readonly paymentId: Payment['id'];
+    public readonly paymentId: Payment['id'] | null;
     public readonly event: PaymentEvents;
     public readonly status: Payment['status'];
     public readonly idempotencyKey: string;
@@ -34,7 +34,7 @@ class PaymentEvent {
         createdAt,
     }: {
         id: string;
-        paymentId: string;
+        paymentId: Payment['id'] | null;
         event: PaymentEvents;
         status: Payment['status'];
         idempotencyKey: string;
