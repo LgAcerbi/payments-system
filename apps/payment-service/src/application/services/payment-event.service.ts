@@ -49,7 +49,7 @@ class PaymentEventService {
             return;
         }
 
-        if (eventStatusDependencies[paymentEvent.event].includes(payment.status)) {
+        if (!eventStatusDependencies[paymentEvent.event].includes(payment.status)) {
             throw new ConflictError(
                 `Cannot set payment status to "${paymentEvent.status}" because payment is not in "${eventStatusDependencies[paymentEvent.event].join(', ').trim()}" statuses`,
             );
