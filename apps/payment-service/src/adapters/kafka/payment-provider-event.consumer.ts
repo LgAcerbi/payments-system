@@ -2,7 +2,7 @@ import type { Consumer } from 'kafkajs';
 import type { PaymentEventService } from '../../application';
 
 import { logger } from '@workspace/logger';
-import { ValidationError } from '@workspace/errors';
+import { ValidationError, ConflictError } from '@workspace/errors';
 import { paymentProviderEventDtoSchema } from '@workspace/payment';
 import { StripePaymentEventMapper } from '../stripe/stripe-payment-event.mapper';
 
@@ -83,6 +83,14 @@ class PaymentProviderEventConsumer {
                         logger.error(
                             { topic, partition, offset: message.offset },
                             `Validation error consuming payment provider event: ${error.message}`,
+                        );
+                        return;
+                    }
+
+                    if (error instanceof ConflictError) {
+                        logger.info(
+                            { topic, partition, offset: message.offset },
+                            `Conflict error consuming payment provider event: ${error.message}`,
                         );
                         return;
                     }
