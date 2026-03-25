@@ -1,5 +1,6 @@
-type PaymentStatus = 'initiated' | 'processing' | 'succeeded' | 'failed' | 'canceled';
+import { ValidationError } from '@workspace/errors';
 
+type PaymentStatus = 'initiated' | 'processing' | 'succeeded' | 'failed' | 'canceled';
 type PaymentProvider = 'stripe';
 
 class Payment {
@@ -57,11 +58,11 @@ class Payment {
         updatedAt: Date;
     }) {
         if (amount <= 0) {
-            throw new Error('Amount must be greater than 0');
+            throw new ValidationError('Amount must be greater than 0');
         }
 
         if (!orderId) {
-            throw new Error('Order ID is required');
+            throw new ValidationError('Order ID is required');
         }
 
         this.id = id;
