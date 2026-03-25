@@ -21,6 +21,8 @@
     "paths": {
       "@workspace/drizzle-pg": ["libs/drizzle-pg/src/index.ts"],
       "@workspace/errors": ["libs/errors/src/index.ts"],
+      "@workspace/http": ["libs/http/src/index.ts"],
+      "@workspace/fastify": ["libs/fastify/src/index.ts"],
       "@workspace/kafka": ["libs/kafka/src/index.ts"],
       "@workspace/logger": ["libs/logger/src/index.ts"],
       "@workspace/payment": ["libs/payment/src/index.ts"],
