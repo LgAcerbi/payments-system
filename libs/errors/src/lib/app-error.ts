@@ -1,8 +1,8 @@
 import type { ErrorTypeValue } from './error-type.js';
 
 export interface AppErrorShape {
-  message: string;
-  type: string;
+    message: string;
+    type: string;
 }
 
 /**
@@ -12,12 +12,12 @@ export interface AppErrorShape {
  * Later extensions can be added for GRPC, AMQP, etc.
  */
 export class AppError extends Error implements AppErrorShape {
-  readonly type: string;
+    readonly type: string;
 
-  constructor(message: string, type: ErrorTypeValue | string) {
-    super(message);
-    this.type = type;
-    this.name = 'AppError';
-    Object.setPrototypeOf(this, AppError.prototype);
-  }
+    constructor(message: string, type: ErrorTypeValue | string) {
+        super(message);
+        this.type = type;
+        this.name = 'AppError';
+        Object.setPrototypeOf(this, AppError.prototype);
+    }
 }

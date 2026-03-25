@@ -15,10 +15,7 @@ const drizzleSchema = {
 
 type DrizzleSchema = typeof drizzleSchema;
 
-const dbClient = new NodePgDrizzleClient<DrizzleSchema>(
-    process.env.DATABASE_URL ?? '',
-    drizzleSchema,
-);
+const dbClient = new NodePgDrizzleClient<DrizzleSchema>(process.env.DATABASE_URL ?? '', drizzleSchema);
 const db = dbClient.getDbInstance();
 ```
 

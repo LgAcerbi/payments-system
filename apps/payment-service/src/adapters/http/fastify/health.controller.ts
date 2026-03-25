@@ -3,9 +3,7 @@ import type { FastifyHttpServerInstance } from '@workspace/fastify';
 import { z } from 'zod';
 
 class FastifyHttpHealthController {
-    constructor(
-        private readonly server: FastifyHttpServerInstance,
-    ) {}
+    constructor(private readonly server: FastifyHttpServerInstance) {}
 
     public addRoutes() {
         this.server.route({

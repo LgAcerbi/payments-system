@@ -12,10 +12,7 @@ class PaymentService {
         private readonly paymentProviderGatewayResolver: PaymentProviderGatewayResolver,
     ) {}
 
-    async createPayment(
-        paymentData: CreatePaymentData,
-        idempotencyKey: string,
-    ): Promise<Payment> {
+    async createPayment(paymentData: CreatePaymentData, idempotencyKey: string): Promise<Payment> {
         const paymentProviderGateway = this.paymentProviderGatewayResolver.resolve(paymentData.provider);
 
         const existingPayment = await this.paymentRepository.findPaymentByIdempotencyKey(idempotencyKey);
@@ -24,10 +21,7 @@ class PaymentService {
             throw new ConflictError(`Payment with idempotency key ${idempotencyKey} already exists`);
         }
 
-        const providerPayment = await paymentProviderGateway.createPayment(
-            paymentData.amount,
-            paymentData.currency,
-        );
+        const providerPayment = await paymentProviderGateway.createPayment(paymentData.amount, paymentData.currency);
 
         const payment = new Payment({
             id: randomUUID(),
@@ -53,9 +47,9 @@ class PaymentService {
 
     async confirmPaymentIntent(paymentId: string, paymentMethodId: string): Promise<void> {
         const payment = await this.getPaymentById(paymentId);
-        
+
         const paymentProviderGateway = this.paymentProviderGatewayResolver.resolve(payment.provider);
-        
+
         await paymentProviderGateway.confirmPaymentIntent(payment.providerPaymentId, paymentMethodId);
 
         await this.paymentRepository.confirmPaymentIntent(paymentId);
@@ -71,10 +65,7 @@ class PaymentService {
         return payment;
     }
 
-    async getPaymentByProviderPaymentId(
-        providerPaymentId: string,
-        provider: Payment['provider'],
-    ): Promise<Payment> {
+    async getPaymentByProviderPaymentId(providerPaymentId: string, provider: Payment['provider']): Promise<Payment> {
         const payment = await this.paymentRepository.getPaymentByProviderPaymentId(providerPaymentId, provider);
 
         if (!payment) {

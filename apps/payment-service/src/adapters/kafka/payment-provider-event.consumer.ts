@@ -63,9 +63,7 @@ class KafkaPaymentProviderEventConsumer {
         } catch (error) {
             void error;
 
-            throw new ValidationError(
-                `Invalid payment provider event-message: ${eventMessage} is not a valid JSON`,
-            );
+            throw new ValidationError(`Invalid payment provider event-message: ${eventMessage} is not a valid JSON`);
         }
 
         const parsedEvent = paymentProviderEventDtoSchema.safeParse(jsonParsedEventMessage);
@@ -136,10 +134,7 @@ class KafkaPaymentProviderEventConsumer {
         }
     }
 
-    private async processHandleWithRetry(
-        fn: () => Promise<void>,
-        dlContext: DeadLetterContext,
-    ): Promise<void> {
+    private async processHandleWithRetry(fn: () => Promise<void>, dlContext: DeadLetterContext): Promise<void> {
         let lastError: unknown;
 
         for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {

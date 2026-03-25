@@ -30,9 +30,7 @@ class KafkaClient {
             return false;
         }
 
-        return error.message.includes(
-            'This server does not host this topic-partition',
-        );
+        return error.message.includes('This server does not host this topic-partition');
     }
 
     async getProducer(connectionRetries = 3): Promise<Producer> {
@@ -53,12 +51,7 @@ class KafkaClient {
         throw new Error('Failed to connect to Kafka producer');
     }
 
-    async getConsumer(
-        groupId: string,
-        topic: string,
-        fromBeginning = false,
-        connectionRetries = 3,
-    ): Promise<Consumer> {
+    async getConsumer(groupId: string, topic: string, fromBeginning = false, connectionRetries = 3): Promise<Consumer> {
         if (!groupId) {
             throw new Error('Missing Kafka consumer group id');
         }
@@ -90,9 +83,7 @@ class KafkaClient {
     }
 }
 
-function createKafkaClient(
-    options: KafkaClientOptions,
-): KafkaClient {
+function createKafkaClient(options: KafkaClientOptions): KafkaClient {
     return new KafkaClient(options);
 }
 

@@ -1,11 +1,13 @@
-import type { PaymentEventMapperResolver } from "../../application";
-import type { PaymentEventMapper } from "../../application";
-import type { Payment } from "../../domain";
+import type { PaymentEventMapperResolver } from '../../application';
+import type { PaymentEventMapper } from '../../application';
+import type { Payment } from '../../domain';
 
-import { ValidationError } from "@workspace/errors";
+import { ValidationError } from '@workspace/errors';
 
 class PaymentEventMapperResolverAdapter implements PaymentEventMapperResolver {
-    constructor(private readonly paymentEventMapper: Map<Payment['provider'], PaymentEventMapper['toPaymentProviderEvent']>) {}
+    constructor(
+        private readonly paymentEventMapper: Map<Payment['provider'], PaymentEventMapper['toPaymentProviderEvent']>,
+    ) {}
 
     public resolve(provider: Payment['provider']): PaymentEventMapper['toPaymentProviderEvent'] {
         const paymentEventMapper = this.paymentEventMapper.get(provider);

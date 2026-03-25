@@ -84,7 +84,7 @@ class Payment {
     public canTransitionTo(status: PaymentStatus): boolean {
         const statusDependencies = this.eventStatusesDependencies.get(this.status);
 
-        if (statusDependencies &&!statusDependencies.includes(status)) {
+        if (statusDependencies && !statusDependencies.includes(status)) {
             return false;
         }
 

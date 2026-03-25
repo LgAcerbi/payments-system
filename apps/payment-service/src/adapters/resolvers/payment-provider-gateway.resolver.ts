@@ -1,8 +1,8 @@
-import type { PaymentProviderGatewayResolver } from "../../application";
-import type { PaymentProviderGateway } from "../../application";
-import type { Payment } from "../../domain";
+import type { PaymentProviderGatewayResolver } from '../../application';
+import type { PaymentProviderGateway } from '../../application';
+import type { Payment } from '../../domain';
 
-import { ValidationError } from "@workspace/errors";
+import { ValidationError } from '@workspace/errors';
 
 class PaymentProviderGatewayResolverAdapter implements PaymentProviderGatewayResolver {
     constructor(private readonly paymentProviderGateways: Map<Payment['provider'], PaymentProviderGateway>) {}
@@ -18,5 +18,5 @@ class PaymentProviderGatewayResolverAdapter implements PaymentProviderGatewayRes
     }
 }
 
-export default PaymentProviderGatewayResolverAdapter
-export { PaymentProviderGatewayResolverAdapter }
+export default PaymentProviderGatewayResolverAdapter;
+export { PaymentProviderGatewayResolverAdapter };

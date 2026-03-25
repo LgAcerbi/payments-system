@@ -8,10 +8,7 @@ const paymentStatusSchema = z.enum(['initiated', 'processing', 'succeeded', 'fai
 
 const paymentResponseSchema = z.object({
     id: z.uuid(),
-    amount: z
-        .number()
-        .int()
-        .describe('Amount in the smallest unit of currency (e.g. cents for USD).'),
+    amount: z.number().int().describe('Amount in the smallest unit of currency (e.g. cents for USD).'),
     description: z.string().nullable(),
     amountRefunded: z.number().int().nullable(),
     currency: z.string(),
@@ -31,9 +28,7 @@ const createPaymentBodySchema = z.object({
         amount: z
             .number()
             .int()
-            .describe(
-                'Amount in the smallest unit of currency (e.g. cents for USD). Consumers format for display.',
-            ),
+            .describe('Amount in the smallest unit of currency (e.g. cents for USD). Consumers format for display.'),
         currency: z.string(),
         orderId: z.string(),
         method: z.string(),
@@ -103,7 +98,10 @@ class FastifyHttpPaymentController {
                 },
             },
             handler: async (request, reply) => {
-                const payment = await this.paymentService.getPaymentByProviderPaymentId(request.params.providerPaymentId, request.params.provider);
+                const payment = await this.paymentService.getPaymentByProviderPaymentId(
+                    request.params.providerPaymentId,
+                    request.params.provider,
+                );
 
                 return reply.status(200).send(payment);
             },

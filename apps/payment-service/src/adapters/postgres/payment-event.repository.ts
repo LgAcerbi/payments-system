@@ -10,7 +10,10 @@ class PostgresPaymentEventRepository implements PaymentEventRepository {
     constructor(private readonly db: NodePgDatabase<PostgresPaymentEventDbSchema>) {}
 
     async createPaymentEvent(paymentEvent: PaymentEvent) {
-        const [result] = await this.db.insert(postgresPaymentEventDbSchema.paymentEvents).values(paymentEvent).returning();
+        const [result] = await this.db
+            .insert(postgresPaymentEventDbSchema.paymentEvents)
+            .values(paymentEvent)
+            .returning();
 
         return new PaymentEvent({
             ...result,

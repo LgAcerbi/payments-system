@@ -32,7 +32,6 @@ class PaymentEventService {
             createdAt: new Date(),
         });
 
-
         await this.paymentEventRepository.createPaymentEvent(createdPaymentEvent);
 
         if (paymentEvent.event === 'payment-initiated') {

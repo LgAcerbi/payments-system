@@ -41,7 +41,7 @@ export async function compose(
         httpServerHost,
         httpRateLimitMax,
         httpRateLimitTimeWindow,
-            messagingRetryAttempts,
+        messagingRetryAttempts,
         messagingRetryBaseDelayMs,
     } = options;
 

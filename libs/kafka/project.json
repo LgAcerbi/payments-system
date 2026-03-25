@@ -1,19 +1,25 @@
 {
-  "name": "kafka",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/kafka/src",
-  "projectType": "library",
-  "tags": [],
-  "targets": {
-    "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
-      "options": {
-        "main": "libs/kafka/src/index.ts",
-        "outputPath": "dist/libs/kafka",
-        "tsConfig": "libs/kafka/tsconfig.lib.json",
-        "generatePackageJson": false
-      }
+    "name": "kafka",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/kafka/src",
+    "projectType": "library",
+    "tags": [],
+    "targets": {
+        "build": {
+            "executor": "@nx/js:tsc",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "main": "libs/kafka/src/index.ts",
+                "outputPath": "dist/libs/kafka",
+                "tsConfig": "libs/kafka/tsconfig.lib.json",
+                "generatePackageJson": false
+            }
+        },
+        "format": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npx prettier --write \"{projectRoot}/**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs,json,md,yml,yaml}\""
+            }
+        }
     }
-  }
 }

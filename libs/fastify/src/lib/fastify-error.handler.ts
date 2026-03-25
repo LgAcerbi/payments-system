@@ -6,10 +6,7 @@ import { AppError } from '@workspace/errors';
 class FastifyErrorHandler {
     constructor(private readonly httpErrorHelper: HttpErrorHelper) {}
 
-    public buildFromFastifyError(
-        error: FastifyError & { statusCode: number },
-        request: FastifyRequest,
-    ): HttpErrorBody {
+    public buildFromFastifyError(error: FastifyError & { statusCode: number }, request: FastifyRequest): HttpErrorBody {
         const { statusCode } = error;
         const typeSuffix = error.code ? `HTTP_${error.code}` : 'HTTP_ERROR';
 
@@ -26,15 +23,11 @@ class FastifyErrorHandler {
         if (!(error instanceof Error)) {
             return false;
         }
-    
+
         const candidate = error as FastifyError;
         const { statusCode } = candidate;
-    
-        return (
-            typeof statusCode === 'number' &&
-            statusCode >= 400 &&
-            statusCode < 500
-        );
+
+        return typeof statusCode === 'number' && statusCode >= 400 && statusCode < 500;
     }
 
     public handle(error: FastifyError, request: FastifyRequest, reply: FastifyReply) {

@@ -101,14 +101,17 @@ class PostgresPaymentRepository implements PaymentRepository {
             );
     }
     async findPaymentByIdempotencyKey(idempotencyKey: Payment['idempotencyKey']): Promise<Payment | null> {
-        const [result] = await this.db.select().from(postgresPaymentDbSchema.payments).where(eq(postgresPaymentDbSchema.payments.idempotencyKey, idempotencyKey));
+        const [result] = await this.db
+            .select()
+            .from(postgresPaymentDbSchema.payments)
+            .where(eq(postgresPaymentDbSchema.payments.idempotencyKey, idempotencyKey));
 
         if (!result) {
             return null;
         }
 
         const payment = new Payment({
-            ...result
+            ...result,
         });
 
         return payment;

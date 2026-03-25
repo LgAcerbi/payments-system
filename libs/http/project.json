@@ -1,19 +1,25 @@
 {
-  "name": "http",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/http/src",
-  "projectType": "library",
-  "tags": [],
-  "targets": {
-    "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
-      "options": {
-        "main": "libs/http/src/index.ts",
-        "outputPath": "dist/libs/http",
-        "tsConfig": "libs/http/tsconfig.lib.json",
-        "generatePackageJson": false
-      }
+    "name": "http",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/http/src",
+    "projectType": "library",
+    "tags": [],
+    "targets": {
+        "build": {
+            "executor": "@nx/js:tsc",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "main": "libs/http/src/index.ts",
+                "outputPath": "dist/libs/http",
+                "tsConfig": "libs/http/tsconfig.lib.json",
+                "generatePackageJson": false
+            }
+        },
+        "format": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npx prettier --write \"{projectRoot}/**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs,json,md,yml,yaml}\""
+            }
+        }
     }
-  }
 }

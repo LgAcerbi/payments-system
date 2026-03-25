@@ -1,19 +1,25 @@
 {
-  "name": "payment",
-  "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "libs/payment/src",
-  "projectType": "library",
-  "tags": [],
-  "targets": {
-    "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
-      "options": {
-        "main": "libs/payment/src/index.ts",
-        "outputPath": "dist/libs/payment",
-        "tsConfig": "libs/payment/tsconfig.lib.json",
-        "generatePackageJson": false
-      }
+    "name": "payment",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "libs/payment/src",
+    "projectType": "library",
+    "tags": [],
+    "targets": {
+        "build": {
+            "executor": "@nx/js:tsc",
+            "outputs": ["{options.outputPath}"],
+            "options": {
+                "main": "libs/payment/src/index.ts",
+                "outputPath": "dist/libs/payment",
+                "tsConfig": "libs/payment/tsconfig.lib.json",
+                "generatePackageJson": false
+            }
+        },
+        "format": {
+            "executor": "nx:run-commands",
+            "options": {
+                "command": "npx prettier --write \"{projectRoot}/**/*.{ts,tsx,js,jsx,mts,cts,mjs,cjs,json,md,yml,yaml}\""
+            }
+        }
     }
-  }
 }

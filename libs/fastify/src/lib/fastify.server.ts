@@ -56,7 +56,9 @@ class FastifyServer {
             routePrefix: '/docs',
         });
 
-        app.setErrorHandler((error: FastifyError, request: FastifyRequest, reply: FastifyReply) => this.errorHandler.handle(error, request, reply));
+        app.setErrorHandler((error: FastifyError, request: FastifyRequest, reply: FastifyReply) =>
+            this.errorHandler.handle(error, request, reply),
+        );
 
         return app;
     }
