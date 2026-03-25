@@ -24,6 +24,8 @@ export type ComposeOptions = {
     kafkaBrokers: string[];
     httpServerPort: number;
     httpServerHost: string;
+    httpRateLimitMax: number;
+    httpRateLimitTimeWindow: string;
     messagingRetryAttempts: number;
     messagingRetryBaseDelayMs: number;
 };
@@ -37,7 +39,9 @@ export async function compose(
         kafkaBrokers,
         httpServerPort,
         httpServerHost,
-        messagingRetryAttempts,
+        httpRateLimitMax,
+        httpRateLimitTimeWindow,
+            messagingRetryAttempts,
         messagingRetryBaseDelayMs,
     } = options;
 
@@ -65,10 +69,15 @@ export async function compose(
         urnNamespace: 'urn:payment-service:problem:',
     });
 
+    const httpRateLimit = {
+        max: httpRateLimitMax,
+        timeWindow: httpRateLimitTimeWindow,
+    };
     const httpErrorHandler = new FastifyErrorHandler(httpErrorHelper);
     const httpServer = await new FastifyServer(
         httpServerPort,
         httpServerHost,
+        httpRateLimit,
         'Payment Service',
         httpErrorHandler,
     ).start();

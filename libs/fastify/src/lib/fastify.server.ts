@@ -3,6 +3,7 @@ import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 
 import cors from '@fastify/cors';
 import Fastify from 'fastify';
+import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import { jsonSchemaTransform, serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
@@ -14,6 +15,10 @@ class FastifyServer {
     constructor(
         private readonly port: number,
         private readonly host: string,
+        private readonly rateLimit: {
+            max: number;
+            timeWindow: string;
+        },
         private readonly serviceName: string,
         private readonly errorHandler: FastifyErrorHandler,
     ) {}
@@ -40,6 +45,11 @@ class FastifyServer {
                 servers: [{ url: `http://${this.host}:${this.port}`, description: 'Development' }],
             },
             transform: jsonSchemaTransform,
+        });
+
+        app.register(rateLimit, {
+            max: this.rateLimit.max,
+            timeWindow: this.rateLimit.timeWindow,
         });
 
         await app.register(swaggerUi, {
