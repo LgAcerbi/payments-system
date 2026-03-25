@@ -113,14 +113,14 @@ class PostgresPaymentRepository implements PaymentRepository {
     async confirmPaymentIntent(paymentId: string): Promise<void> {
         await this.db
             .update(postgresPaymentDbSchema.payments)
-            .set({ status: 'processing' })
+            .set({ status: 'processing', updatedAt: new Date() })
             .where(eq(postgresPaymentDbSchema.payments.id, paymentId));
     }
 
     async updatePaymentStatusById(paymentId: string, status: Payment['status']): Promise<void> {
         await this.db
             .update(postgresPaymentDbSchema.payments)
-            .set({ status })
+            .set({ status, updatedAt: new Date() })
             .where(eq(postgresPaymentDbSchema.payments.id, paymentId));
     }
 
@@ -131,7 +131,7 @@ class PostgresPaymentRepository implements PaymentRepository {
     ): Promise<void> {
         await this.db
             .update(postgresPaymentDbSchema.payments)
-            .set({ status })
+            .set({ status, updatedAt: new Date() })
             .where(
                 and(
                     eq(postgresPaymentDbSchema.payments.providerPaymentId, providerPaymentId),
