@@ -23,12 +23,22 @@ export type ComposeOptions = {
     kafkaBrokers: string[];
     httpServerPort: number;
     httpServerHost: string;
+    messagingRetryAttempts: number;
+    messagingRetryBaseDelayMs: number;
 };
 
 export async function compose(
     options: ComposeOptions,
 ): Promise<{ httpServer: FastifyHttpServerInstance; eventConsumers: { startConsume: () => Promise<void> }[] }> {
-    const { privateStripeKey, databaseUrl, kafkaBrokers, httpServerPort, httpServerHost } = options;
+    const {
+        privateStripeKey,
+        databaseUrl,
+        kafkaBrokers,
+        httpServerPort,
+        httpServerHost,
+        messagingRetryAttempts,
+        messagingRetryBaseDelayMs,
+    } = options;
 
     const pgClient = new PgDrizzleClient(databaseUrl, { ...postgresDbSchema });
     const dbInstance = pgClient.getDbInstance();
@@ -55,18 +65,31 @@ export async function compose(
     });
 
     const httpErrorHandler = new FastifyErrorHandler(httpErrorHelper);
-    const httpServer = await new FastifyServer(httpServerPort, httpServerHost, 'Payment Service', httpErrorHandler).start();
+    const httpServer = await new FastifyServer(
+        httpServerPort,
+        httpServerHost,
+        'Payment Service',
+        httpErrorHandler,
+    ).start();
     const httpPaymentController = new FastifyHttpPaymentController(httpServer, paymentService);
     httpPaymentController.addRoutes();
 
     const kafkaClient = new KafkaClient({ brokers: kafkaBrokers, clientId: 'payment-service' });
     const consumer = await kafkaClient.getConsumer('payment-service', 'payment-events');
+    const producer = await kafkaClient.getProducer();
+    const deadLetterConfig = {
+        producer,
+        topic: 'payment-events-dead-letter',
+    };
 
-    const kafkaPaymentProviderEventConsumer = new KafkaPaymentProviderEventConsumer(
-        consumer,
+    const kafkaPaymentProviderEventConsumer = new KafkaPaymentProviderEventConsumer({
+        kafkaConsumer: consumer,
         paymentEventService,
         paymentEventMapperResolver,
-    );
+        retryAttempts: messagingRetryAttempts,
+        retryBaseDelayMs: messagingRetryBaseDelayMs,
+        deadLetterConfig,
+    });
 
     return { httpServer, eventConsumers: [kafkaPaymentProviderEventConsumer] };
 }

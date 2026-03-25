@@ -9,6 +9,8 @@ async function main() {
         KAFKA_BROKERS,
         HOST = "0.0.0.0",
         PORT = 80,
+        MESSAGING_RETRY_ATTEMPTS = 3,
+        MESSAGING_RETRY_BASE_DELAY_MS = 400,
     } = process.env
 
     if (!PRIVATE_STRIPE_KEY) {
@@ -40,6 +42,8 @@ async function main() {
         kafkaBrokers,
         httpServerPort: port,
         httpServerHost: HOST,
+        messagingRetryAttempts: Number(MESSAGING_RETRY_ATTEMPTS),
+        messagingRetryBaseDelayMs: Number(MESSAGING_RETRY_BASE_DELAY_MS),
     })
 
     for (const eventConsumer of eventConsumers) {
