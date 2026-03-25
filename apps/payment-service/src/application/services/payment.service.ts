@@ -1,7 +1,7 @@
 import type { PaymentRepository, PaymentProviderGatewayResolver } from '..';
 
 import { randomUUID } from 'crypto';
-import { NotFoundError } from '@workspace/errors';
+import { ConflictError, NotFoundError } from '@workspace/errors';
 import { Payment } from '../../domain';
 
 class PaymentService {
@@ -15,6 +15,12 @@ class PaymentService {
         idempotencyKey: string,
     ): Promise<Payment> {
         const paymentProviderGateway = this.paymentProviderGatewayResolver.resolve(paymentData.provider);
+
+        const existingPayment = await this.paymentRepository.findPaymentByIdempotencyKey(idempotencyKey);
+
+        if (existingPayment) {
+            throw new ConflictError(`Payment with idempotency key ${idempotencyKey} already exists`);
+        }
 
         const providerPayment = await paymentProviderGateway.createPayment(
             paymentData.amount,
