@@ -4,6 +4,8 @@ import { randomUUID } from 'crypto';
 import { ConflictError, NotFoundError } from '@workspace/errors';
 import { Payment } from '../../domain';
 
+type CreatePaymentData = Pick<Payment, 'amount' | 'currency' | 'orderId' | 'method' | 'provider' | 'description'>;
+
 class PaymentService {
     constructor(
         private readonly paymentRepository: PaymentRepository,
@@ -11,7 +13,7 @@ class PaymentService {
     ) {}
 
     async createPayment(
-        paymentData: Pick<Payment, 'amount' | 'currency' | 'orderId' | 'method' | 'provider' | 'description'>,
+        paymentData: CreatePaymentData,
         idempotencyKey: string,
     ): Promise<Payment> {
         const paymentProviderGateway = this.paymentProviderGatewayResolver.resolve(paymentData.provider);
