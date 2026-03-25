@@ -8,42 +8,20 @@ import { ErrorType } from '@workspace/errors';
  * - `{ instance: '...' }`, or
  * - a request-like object: Express `originalUrl` / `url`, Fastify `url`, etc.
  */
-export type HttpErrorInstanceSource = {
+type HttpErrorInstanceSource = {
     instance?: string;
     url?: string;
     originalUrl?: string;
 };
 
-/**
- * Minimal error shape for mapping framework HTTP errors (4xx) to Problem Details.
- * Satisfied by typical Fastify errors, Express `http-errors`, `createError`, etc.
- */
-export type HttpStatusCodedError = {
-    statusCode: number;
-    message: string;
-    code?: string;
-};
-
-function resolveHttpErrorInstance(source: HttpErrorInstanceSource): string | undefined {
-    if (typeof source.instance === 'string' && source.instance !== '') {
-        return source.instance;
-    }
-
-    if (typeof source.originalUrl === 'string' && source.originalUrl !== '') {
-        return source.originalUrl;
-    }
-
-    if (typeof source.url === 'string' && source.url !== '') {
-        return source.url;
-    }
-
-    return undefined;
-}
-
 class HttpErrorHelper {
-    public urnPrefix: string;
+    private urnPrefix: string;
 
-    public httpStatusByAppErrorType: Record<string, number> = {
+    constructor({ urnNamespace }: HttpErrorHelperConfig) {
+        this.urnPrefix = urnNamespace.endsWith(':') ? urnNamespace : `${urnNamespace}:`;
+    }
+
+    private httpStatusByAppErrorType: Record<string, number> = {
         [ErrorType.NOT_FOUND]: 404,
         [ErrorType.VALIDATION]: 400,
         [ErrorType.CONFLICT]: 409,
@@ -52,7 +30,7 @@ class HttpErrorHelper {
         [ErrorType.FORBIDDEN]: 403,
     };
 
-    public titleByAppErrorType: Record<string, string> = {
+    private titleByAppErrorType: Record<string, string> = {
         [ErrorType.NOT_FOUND]: 'Not Found',
         [ErrorType.VALIDATION]: 'Bad Request',
         [ErrorType.CONFLICT]: 'Conflict',
@@ -60,10 +38,6 @@ class HttpErrorHelper {
         [ErrorType.UNAUTHORIZED]: 'Unauthorized',
         [ErrorType.FORBIDDEN]: 'Forbidden',
     };
-
-    constructor({ urnNamespace }: HttpErrorHelperConfig) {
-        this.urnPrefix = urnNamespace.endsWith(':') ? urnNamespace : `${urnNamespace}:`;
-    }
 
     public httpStatusTitle(status: number): string {
         const names: Record<number, string> = {
@@ -77,6 +51,22 @@ class HttpErrorHelper {
         };
 
         return names[status] ?? 'Error';
+    }
+
+    private resolveHttpErrorInstance(source: HttpErrorInstanceSource): string | undefined {
+        if (typeof source.instance === 'string' && source.instance !== '') {
+            return source.instance;
+        }
+
+        if (typeof source.originalUrl === 'string' && source.originalUrl !== '') {
+            return source.originalUrl;
+        }
+
+        if (typeof source.url === 'string' && source.url !== '') {
+            return source.url;
+        }
+
+        return undefined;
     }
 
     public getHttpStatusForAppError(error: AppError): number {
@@ -94,7 +84,7 @@ class HttpErrorHelper {
         detail: string,
         instanceSource: HttpErrorInstanceSource,
     ): HttpErrorBody {
-        const instance = resolveHttpErrorInstance(instanceSource);
+        const instance = this.resolveHttpErrorInstance(instanceSource);
         const body: HttpErrorBody = {
             type: this.problemTypeUrn(typeSuffix),
             title,
@@ -134,10 +124,6 @@ type HttpErrorHelperConfig = {
     urnNamespace: string;
 };
 
-function createHttpErrorHelpers(config: HttpErrorHelperConfig): HttpErrorHelper {
-    return new HttpErrorHelper(config);
-}
-
 /**
  * RFC 9457 Problem Details for HTTP APIs (application/problem+json).
  * @see https://www.rfc-editor.org/rfc/rfc9457.html
@@ -153,5 +139,5 @@ const httpErrorSchema = z.object({
 type HttpErrorBody = z.infer<typeof httpErrorSchema>;
 
 export default HttpErrorHelper;
-export { HttpErrorHelper, createHttpErrorHelpers, httpErrorSchema };
-export type { HttpErrorBody, HttpErrorHelperConfig };
+export { HttpErrorHelper, httpErrorSchema };
+export type { HttpErrorBody, HttpErrorHelperConfig, HttpErrorInstanceSource };
