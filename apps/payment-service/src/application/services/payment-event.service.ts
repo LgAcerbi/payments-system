@@ -5,13 +5,6 @@ import { randomUUID } from 'node:crypto';
 import { NotFoundError, ConflictError } from '@workspace/errors';
 import { PaymentEvent } from '../../domain';
 
-const eventStatusesDependencies = {
-    'payment-succeeded': ['processing'],
-    'payment-processing': ['initiated'],
-    'payment-failed': ['processing'],
-    'payment-canceled': ['initiated'],
-};
-
 class PaymentEventService {
     constructor(
         private readonly paymentRepository: PaymentRepository,
@@ -71,10 +64,8 @@ class PaymentEventService {
             return;
         }
 
-        const eventStatusDependencies = eventStatusesDependencies[paymentEvent.event];
-
-        if (eventStatusesDependencies[paymentEvent.event] && !eventStatusesDependencies[paymentEvent.event].includes(payment.status)) {
-            const errorMessage = `Cannot set payment status to "${incomingPaymentStatus}" because payment is not in "${eventStatusDependencies.join(', ').trim()}" statuses`;
+        if (!payment.canTransitionTo(incomingPaymentStatus)) {
+            const errorMessage = `Cannot set payment status to "${incomingPaymentStatus}" cause payment is not in the correct status to transition to it`;
 
             await this.paymentEventRepository.updatePaymentEventStatus(createdPaymentEvent.id, 'failed', errorMessage);
 
