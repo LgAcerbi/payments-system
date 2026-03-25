@@ -1,0 +1,19 @@
+{
+  "name": "fastify",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/fastify/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "main": "libs/fastify/src/index.ts",
+        "outputPath": "dist/libs/fastify",
+        "tsConfig": "libs/fastify/tsconfig.lib.json",
+        "generatePackageJson": false
+      }
+    }
+  }
+}
