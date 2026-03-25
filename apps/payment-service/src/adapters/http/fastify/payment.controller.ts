@@ -1,5 +1,5 @@
-import type { createHttpServer } from './server';
-import type { PaymentService } from '../../application';
+import type { FastifyHttpServerInstance } from '@workspace/fastify';
+import type { PaymentService } from '../../../application';
 
 import { z } from 'zod';
 import { httpErrorSchema } from '@workspace/http';
@@ -43,9 +43,9 @@ const createPaymentBodySchema = z.object({
     idempotencyKey: z.string(),
 });
 
-class HttpPaymentController {
+class FastifyHttpPaymentController {
     constructor(
-        private readonly server: Awaited<ReturnType<typeof createHttpServer>>,
+        private readonly server: FastifyHttpServerInstance,
         private readonly paymentService: PaymentService,
     ) {}
 
@@ -148,5 +148,5 @@ class HttpPaymentController {
     }
 }
 
-export default HttpPaymentController;
-export { HttpPaymentController };
+export default FastifyHttpPaymentController;
+export { FastifyHttpPaymentController };
