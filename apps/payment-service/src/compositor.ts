@@ -1,16 +1,19 @@
+import type { FastifyHttpServerInstance } from '@workspace/fastify';
+
 import { PgDrizzleClient } from '@workspace/drizzle-pg';
+import { HttpErrorHelper } from '@workspace/http';
+import { FastifyServer, FastifyErrorHandler } from '@workspace/fastify';
 import { KafkaClient } from '@workspace/kafka';
 import {
     postgresDbSchema,
-    createHttpServer,
-    HttpPaymentController,
+    FastifyHttpPaymentController,
     KafkaPaymentProviderEventConsumer,
     PostgresPaymentRepository,
     PostgresPaymentEventRepository,
     StripePaymentProviderGateway,
     StripePaymentEventMapper,
     PaymentProviderGatewayResolverAdapter,
-    PaymentEventMapperResolverAdapter
+    PaymentEventMapperResolverAdapter,
 } from './adapters';
 import { PaymentEventService, PaymentService } from './application';
 
@@ -22,38 +25,48 @@ export type ComposeOptions = {
     httpServerHost: string;
 };
 
-export async function compose(options: ComposeOptions): Promise<{ httpServer: Awaited<ReturnType<typeof createHttpServer>>, eventConsumers: { startConsume: () => Promise<void> }[] }> {
+export async function compose(
+    options: ComposeOptions,
+): Promise<{ httpServer: FastifyHttpServerInstance; eventConsumers: { startConsume: () => Promise<void> }[] }> {
     const { privateStripeKey, databaseUrl, kafkaBrokers, httpServerPort, httpServerHost } = options;
 
-    const pgClient = new PgDrizzleClient(databaseUrl, { ...postgresDbSchema })
+    const pgClient = new PgDrizzleClient(databaseUrl, { ...postgresDbSchema });
     const dbInstance = pgClient.getDbInstance();
 
     const stripePaymentProviderGateway = new StripePaymentProviderGateway(privateStripeKey);
     const stripePaymentEventMapper = new StripePaymentEventMapper();
 
-    const paymentProviderGatewayResolver = new PaymentProviderGatewayResolverAdapter(new Map([
-        ['stripe', stripePaymentProviderGateway],
-    ]));
+    const paymentProviderGatewayResolver = new PaymentProviderGatewayResolverAdapter(
+        new Map([['stripe', stripePaymentProviderGateway]]),
+    );
 
-    const paymentEventMapperResolver = new PaymentEventMapperResolverAdapter(new Map([
-        ['stripe', stripePaymentEventMapper.toPaymentProviderEvent],
-    ]));
-    
+    const paymentEventMapperResolver = new PaymentEventMapperResolverAdapter(
+        new Map([['stripe', stripePaymentEventMapper.toPaymentProviderEvent]]),
+    );
+
     const postgresPaymentRepository = new PostgresPaymentRepository(dbInstance);
     const postgresPaymentEventRepository = new PostgresPaymentEventRepository(dbInstance);
-    
+
     const paymentService = new PaymentService(postgresPaymentRepository, paymentProviderGatewayResolver);
     const paymentEventService = new PaymentEventService(postgresPaymentRepository, postgresPaymentEventRepository);
 
-    
-    const httpServer = await createHttpServer(httpServerPort, httpServerHost);
-    const httpPaymentController = new HttpPaymentController(httpServer, paymentService);
+    const httpErrorHelper = new HttpErrorHelper({
+        urnNamespace: 'urn:payment-service:problem:',
+    });
+
+    const httpErrorHandler = new FastifyErrorHandler(httpErrorHelper);
+    const httpServer = await new FastifyServer(httpServerPort, httpServerHost, 'Payment Service', httpErrorHandler).start();
+    const httpPaymentController = new FastifyHttpPaymentController(httpServer, paymentService);
     httpPaymentController.addRoutes();
-    
-    const kafkaClient = new KafkaClient({ brokers: kafkaBrokers, clientId: 'payment-service' })
-    const consumer = await kafkaClient.getConsumer('payment-service', 'payment-events')
-    
-    const kafkaPaymentProviderEventConsumer = new KafkaPaymentProviderEventConsumer(consumer, paymentEventService, paymentEventMapperResolver);
+
+    const kafkaClient = new KafkaClient({ brokers: kafkaBrokers, clientId: 'payment-service' });
+    const consumer = await kafkaClient.getConsumer('payment-service', 'payment-events');
+
+    const kafkaPaymentProviderEventConsumer = new KafkaPaymentProviderEventConsumer(
+        consumer,
+        paymentEventService,
+        paymentEventMapperResolver,
+    );
 
     return { httpServer, eventConsumers: [kafkaPaymentProviderEventConsumer] };
 }
