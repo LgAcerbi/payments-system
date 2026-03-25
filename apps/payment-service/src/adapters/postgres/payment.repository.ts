@@ -26,20 +26,7 @@ class PostgresPaymentRepository implements PaymentRepository {
         }
 
         const payment = new Payment({
-            id: result.id,
-            amount: result.amount,
-            description: result.description,
-            amountRefunded: result.amountRefunded,
-            currency: result.currency,
-            status: result.status,
-            orderId: result.orderId,
-            method: result.method,
-            provider: result.provider,
-            providerPaymentId: result.providerPaymentId,
-            providerData: result.providerData,
-            idempotencyKey: result.idempotencyKey,
-            createdAt: result.createdAt,
-            updatedAt: result.updatedAt,
+            ...result,
         });
 
         return payment;
@@ -61,20 +48,7 @@ class PostgresPaymentRepository implements PaymentRepository {
         }
 
         const payment = new Payment({
-            id: result.id,
-            idempotencyKey: result.idempotencyKey,
-            amount: result.amount,
-            description: result.description,
-            amountRefunded: result.amountRefunded,
-            currency: result.currency,
-            status: result.status,
-            orderId: result.orderId,
-            method: result.method,
-            provider: result.provider,
-            providerPaymentId: result.providerPaymentId,
-            providerData: result.providerData,
-            createdAt: result.createdAt,
-            updatedAt: result.updatedAt,
+            ...result,
         });
 
         return payment;
@@ -91,20 +65,7 @@ class PostgresPaymentRepository implements PaymentRepository {
         }
 
         const payment = new Payment({
-            id: result.id,
-            idempotencyKey: result.idempotencyKey,
-            amount: result.amount,
-            description: result.description,
-            amountRefunded: result.amountRefunded,
-            currency: result.currency,
-            status: result.status,
-            orderId: result.orderId,
-            method: result.method,
-            provider: result.provider,
-            providerPaymentId: result.providerPaymentId,
-            providerData: result.providerData,
-            createdAt: result.createdAt,
-            updatedAt: result.updatedAt,
+            ...result,
         });
 
         return payment;
@@ -138,6 +99,19 @@ class PostgresPaymentRepository implements PaymentRepository {
                     eq(postgresPaymentDbSchema.payments.provider, provider),
                 ),
             );
+    }
+    async findPaymentByIdempotencyKey(idempotencyKey: Payment['idempotencyKey']): Promise<Payment | null> {
+        const [result] = await this.db.select().from(postgresPaymentDbSchema.payments).where(eq(postgresPaymentDbSchema.payments.idempotencyKey, idempotencyKey));
+
+        if (!result) {
+            return null;
+        }
+
+        const payment = new Payment({
+            ...result
+        });
+
+        return payment;
     }
 }
 
