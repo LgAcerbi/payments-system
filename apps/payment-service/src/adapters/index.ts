@@ -1,4 +1,5 @@
 export * from './http/fastify/payment.controller';
+export * from './http/fastify/health.controller';
 export * from './kafka/payment-provider-event.consumer';
 export * from './postgres/payment.repository';
 export * from './postgres/payment-event.repository';

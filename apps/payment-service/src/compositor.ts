@@ -7,6 +7,7 @@ import { KafkaClient } from '@workspace/kafka';
 import {
     postgresDbSchema,
     FastifyHttpPaymentController,
+    FastifyHttpHealthController,
     KafkaPaymentProviderEventConsumer,
     PostgresPaymentRepository,
     PostgresPaymentEventRepository,
@@ -72,7 +73,9 @@ export async function compose(
         httpErrorHandler,
     ).start();
     const httpPaymentController = new FastifyHttpPaymentController(httpServer, paymentService);
+    const httpHealthController = new FastifyHttpHealthController(httpServer);
     httpPaymentController.addRoutes();
+    httpHealthController.addRoutes();
 
     const kafkaClient = new KafkaClient({ brokers: kafkaBrokers, clientId: 'payment-service' });
     const consumer = await kafkaClient.getConsumer('payment-service', 'payment-events');
