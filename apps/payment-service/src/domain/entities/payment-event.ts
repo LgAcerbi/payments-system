@@ -85,6 +85,10 @@ class PaymentEvent {
     }
 
     public canTransitionTo(status: PaymentEventStatus): boolean {
+        if (status === 'created') {
+            return false;
+        }
+
         if (this.status === status) {
             return false;
         }
