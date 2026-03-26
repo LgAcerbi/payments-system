@@ -48,7 +48,11 @@ class PostgresPaymentEventRepository implements PaymentEventRepository {
             return null;
         }
 
-        return result;
+        const paymentEvent = new PaymentEvent({
+            ...result,
+        });
+
+        return paymentEvent;
     }
 }
 
