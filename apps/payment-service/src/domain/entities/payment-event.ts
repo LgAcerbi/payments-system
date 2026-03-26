@@ -1,5 +1,7 @@
 import type { Payment } from './payment';
 
+import { ValidationError } from '@workspace/errors';
+
 type PaymentEvents =
     | 'payment-initiated'
     | 'payment-succeeded'
@@ -55,6 +57,19 @@ class PaymentEvent {
         occurredAt: Date;
         createdAt: Date;
     }) {
+
+        if (!id) {
+            throw new ValidationError('ID is required');
+        }
+
+        if (!paymentId) {
+            throw new ValidationError('Payment ID is required');
+        }
+
+        if (!idempotencyKey) {
+            throw new ValidationError('Idempotency key is required');
+        }
+
         this.id = id;
         this.paymentId = paymentId;
         this.event = event;
