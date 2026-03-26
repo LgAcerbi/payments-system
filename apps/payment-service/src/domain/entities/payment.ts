@@ -92,8 +92,6 @@ class Payment {
     }
 
     public canTransitionTo(status: PaymentStatus): boolean {
-        const statusDependencies = this.statusDependencies.get(status);
-
         if (status === 'initiated') {
             return false;
         }
@@ -101,6 +99,8 @@ class Payment {
         if (this.status === status) {
             return false;
         }
+
+        const statusDependencies = this.statusDependencies.get(status);
 
         if (statusDependencies && !statusDependencies.includes(this.status)) {
             return false;
