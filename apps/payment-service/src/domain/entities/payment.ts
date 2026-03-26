@@ -1,9 +1,8 @@
 import { ValidationError } from '@workspace/errors';
+import { Currency } from './currency';
 
 type PaymentStatus = 'initiated' | 'processing' | 'succeeded' | 'failed' | 'canceled';
 type PaymentProvider = 'stripe';
-
-const currencyRegex = /^[A-Z]{3}$/;
 
 class Payment {
     private readonly statusDependencies = new Map<PaymentStatus, PaymentStatus[]>([
@@ -17,7 +16,7 @@ class Payment {
     public readonly amount: number;
     public readonly description: string | null;
     public readonly amountRefunded: number | null;
-    public readonly currency: string;
+    public readonly currency: Currency;
     public readonly status: PaymentStatus;
     public readonly orderId: string;
     public readonly method: string;
@@ -49,7 +48,7 @@ class Payment {
         amount: number;
         description: string | null;
         amountRefunded: number | null;
-        currency: string;
+        currency: Currency;
         status: PaymentStatus;
         orderId: string;
         method: string;
@@ -65,10 +64,6 @@ class Payment {
 
         if (!orderId) {
             throw new ValidationError('Order ID is required');
-        }
-
-        if (!currencyRegex.test(currency)) {
-            throw new ValidationError('Currency must be a valid ISO 4217 currency code');
         }
 
         this.id = id;

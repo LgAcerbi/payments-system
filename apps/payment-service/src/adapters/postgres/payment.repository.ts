@@ -2,7 +2,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { PostgresPaymentDbSchema } from './payment.schema';
 
 import { eq, and } from 'drizzle-orm';
-import { Payment } from '../../domain';
+import { Payment, Currency } from '../../domain';
 import { postgresPaymentDbSchema } from './payment.schema';
 import { PaymentRepository } from '../../application';
 
@@ -10,7 +10,13 @@ class PostgresPaymentRepository implements PaymentRepository {
     constructor(private readonly db: NodePgDatabase<PostgresPaymentDbSchema>) {}
 
     async createPayment(payment: Payment): Promise<Payment> {
-        await this.db.insert(postgresPaymentDbSchema.payments).values(payment).returning();
+        await this.db
+            .insert(postgresPaymentDbSchema.payments)
+            .values({
+                ...payment,
+                currency: payment.currency.code,
+            })
+            .returning();
 
         return payment;
     }
@@ -27,6 +33,7 @@ class PostgresPaymentRepository implements PaymentRepository {
 
         const payment = new Payment({
             ...result,
+            currency: new Currency(result.currency),
         });
 
         return payment;
@@ -49,6 +56,7 @@ class PostgresPaymentRepository implements PaymentRepository {
 
         const payment = new Payment({
             ...result,
+            currency: new Currency(result.currency),
         });
 
         return payment;
@@ -66,6 +74,7 @@ class PostgresPaymentRepository implements PaymentRepository {
 
         const payment = new Payment({
             ...result,
+            currency: new Currency(result.currency),
         });
 
         return payment;
@@ -112,6 +121,7 @@ class PostgresPaymentRepository implements PaymentRepository {
 
         const payment = new Payment({
             ...result,
+            currency: new Currency(result.currency),
         });
 
         return payment;

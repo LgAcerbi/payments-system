@@ -2,9 +2,11 @@ import type { PaymentRepository, PaymentProviderGatewayResolver } from '..';
 
 import { randomUUID } from 'crypto';
 import { ConflictError, NotFoundError } from '@workspace/errors';
-import { Payment } from '../../domain';
+import { Currency, Payment } from '../../domain';
 
-type CreatePaymentData = Pick<Payment, 'amount' | 'currency' | 'orderId' | 'method' | 'provider' | 'description'>;
+type CreatePaymentData = Pick<Payment, 'amount' | 'orderId' | 'method' | 'provider' | 'description'> & {
+    currency: string;
+};
 
 class PaymentService {
     constructor(
@@ -21,7 +23,8 @@ class PaymentService {
             throw new ConflictError(`Payment with idempotency key ${idempotencyKey} already exists`);
         }
 
-        const providerPayment = await paymentProviderGateway.createPayment(paymentData.amount, paymentData.currency);
+        const currency = new Currency(paymentData.currency);
+        const providerPayment = await paymentProviderGateway.createPayment(paymentData.amount, currency.code);
 
         const payment = new Payment({
             id: randomUUID(),
@@ -29,7 +32,7 @@ class PaymentService {
             amount: paymentData.amount,
             description: paymentData.description,
             amountRefunded: null,
-            currency: paymentData.currency,
+            currency,
             status: 'initiated',
             orderId: paymentData.orderId,
             method: paymentData.method,
