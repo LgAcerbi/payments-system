@@ -57,14 +57,6 @@ class PaymentEventService {
             throw new NotFoundError(errorMessage);
         }
 
-        if (paymentEvent.provider !== payment.provider) {
-            const errorMessage = `Payment provider mismatch: ${paymentEvent.provider} !== ${payment.provider}`;
-
-            await this.paymentEventRepository.updatePaymentEventStatus(createdPaymentEvent.id, 'failed', errorMessage);
-
-            throw new ConflictError(errorMessage);
-        }
-
         await this.paymentEventRepository.updatePaymentEventPaymentId(createdPaymentEvent.id, payment.id);
 
         const { status: incomingPaymentStatus } = paymentData;
