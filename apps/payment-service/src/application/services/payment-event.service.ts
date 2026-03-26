@@ -12,8 +12,8 @@ class PaymentEventService {
     ) {}
 
     async handlePaymentEvent(
-        paymentEvent: Omit<PaymentEvent, 'id' | 'paymentId' | 'createdAt' | 'status' | 'failureReason'>,
-        paymentData: Pick<Payment, 'status'>,
+        paymentEvent: Pick<PaymentEvent, 'event' | 'occurredAt' | 'idempotencyKey' | 'provider' | 'providerEventId' | 'providerPaymentId' | 'providerRawPayload'>,
+        paymentData: Pick<Payment, 'status' >,
     ): Promise<void> {
         const existingPaymentEvent = await this.paymentEventRepository.findPaymentEventByIdempotencyKey(
             paymentEvent.idempotencyKey,
@@ -30,6 +30,10 @@ class PaymentEventService {
             paymentId: null,
             failureReason: null,
             createdAt: new Date(),
+            provider: paymentEvent.provider,
+            providerEventId: paymentEvent.providerEventId,
+            providerPaymentId: paymentEvent.providerPaymentId,
+            providerRawPayload: paymentEvent.providerRawPayload,
         });
 
         await this.paymentEventRepository.createPaymentEvent(createdPaymentEvent);
@@ -51,6 +55,14 @@ class PaymentEventService {
             await this.paymentEventRepository.updatePaymentEventStatus(createdPaymentEvent.id, 'failed', errorMessage);
 
             throw new NotFoundError(errorMessage);
+        }
+
+        if (paymentEvent.provider !== payment.provider) {
+            const errorMessage = `Payment provider mismatch: ${paymentEvent.provider} !== ${payment.provider}`;
+
+            await this.paymentEventRepository.updatePaymentEventStatus(createdPaymentEvent.id, 'failed', errorMessage);
+
+            throw new ConflictError(errorMessage);
         }
 
         await this.paymentEventRepository.updatePaymentEventPaymentId(createdPaymentEvent.id, payment.id);

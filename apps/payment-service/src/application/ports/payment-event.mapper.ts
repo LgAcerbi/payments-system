@@ -3,7 +3,7 @@ import type { Payment, PaymentEvent } from '../../domain';
 
 interface PaymentEventMapper {
     toPaymentProviderEvent(paymentProviderEvent: PaymentProviderEventDto): {
-        paymentEvent: Pick<PaymentEvent, 'event' | 'occurredAt'>;
+        paymentEvent: Pick<PaymentEvent, 'event' | 'occurredAt' | 'idempotencyKey' | 'provider' | 'providerEventId' | 'providerPaymentId' | 'providerRawPayload'>;
         paymentData: Pick<Payment, 'status'>;
     };
 }

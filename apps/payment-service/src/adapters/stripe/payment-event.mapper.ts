@@ -24,6 +24,11 @@ class StripePaymentEventMapper implements PaymentEventMapper {
 
         const partialPaymentEvent = {
             event: stripeEvent.event,
+            idempotencyKey: paymentProviderEvent.idempotencyKey,
+            provider: paymentProviderEvent.provider,
+            providerEventId: paymentProviderEvent.providerEventId,
+            providerPaymentId: paymentProviderEvent.providerPaymentId,
+            providerRawPayload: paymentProviderEvent.providerRawPayload,
             occurredAt,
         };
 
