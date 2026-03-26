@@ -83,19 +83,19 @@
         "test": {
             "executor": "nx:run-commands",
             "options": {
-                "command": "node --import tsx --test \"apps/payment-service/src/**/*.spec.ts\""
+                "command": "node --import tsx --test \"apps/payment-service/src/**/*.spec.ts\" \"apps/payment-service/src/**/*.test.ts\""
             }
         },
         "test:coverage": {
             "executor": "nx:run-commands",
             "options": {
-                "command": "node --import tsx --test --experimental-test-coverage --test-coverage-exclude=\"**/*.spec.ts\" \"apps/payment-service/src/**/*.spec.ts\""
+                "command": "c8 --exclude=\"**/*.spec.ts\" --exclude=\"**/*.test.ts\" --reporter=text --reporter=html --reporter=lcov node --import tsx --test \"apps/payment-service/src/**/*.spec.ts\" \"apps/payment-service/src/**/*.test.ts\""
             }
         },
-        "test:coverage:html": {
+        "test:all:coverage": {
             "executor": "nx:run-commands",
             "options": {
-                "command": "c8 --exclude=\"**/*.spec.ts\" --reporter=text --reporter=html --reporter=lcov node --import tsx --test \"apps/payment-service/src/**/*.spec.ts\""
+                "command": "node --import tsx --test --experimental-test-coverage --test-coverage-exclude=\"**/*.spec.ts\" --test-coverage-exclude=\"**/*.test.ts\" \"apps/payment-service/src/**/*.spec.ts\" \"apps/payment-service/src/**/*.test.ts\""
             }
         },
         "format": {
