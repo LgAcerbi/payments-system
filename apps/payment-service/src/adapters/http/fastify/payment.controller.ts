@@ -82,7 +82,7 @@ class FastifyHttpPaymentController {
             handler: async (request, reply) => {
                 const payment = await this.paymentService.getPaymentById(request.params.id);
 
-                return reply.status(200).send(payment);
+                return reply.status(200).send({ ...payment, currency: payment.currency.code });
             },
         });
 
@@ -103,7 +103,7 @@ class FastifyHttpPaymentController {
                     request.params.provider,
                 );
 
-                return reply.status(200).send(payment);
+                return reply.status(200).send({ ...payment, currency: payment.currency.code });
             },
         });
 
@@ -121,7 +121,7 @@ class FastifyHttpPaymentController {
             handler: async (request, reply) => {
                 const payment = await this.paymentService.getPaymentByOrderId(request.params.orderId);
 
-                return reply.status(200).send(payment);
+                return reply.status(200).send({ ...payment, currency: payment.currency.code });
             },
         });
 
