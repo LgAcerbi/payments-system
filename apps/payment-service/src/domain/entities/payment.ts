@@ -58,6 +58,15 @@ class Payment {
         createdAt: Date;
         updatedAt: Date;
     }) {
+
+        if (!id) {
+            throw new ValidationError('ID is required');
+        }
+
+        if (!idempotencyKey) {
+            throw new ValidationError('Idempotency key is required');
+        }
+
         if (amount <= 0) {
             throw new ValidationError('Amount must be greater than 0');
         }
