@@ -139,7 +139,7 @@ describe('Payment', () => {
         });
     });
 
-    it('should return true if the payment can transition to the given status', () => {
+    it('should return true if the payment can transition to the given status and false otherwise', () => {
         const paymentData = {
             id: '123',
             amount: 100,
