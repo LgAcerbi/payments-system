@@ -43,6 +43,30 @@ describe('Payment', () => {
         assert.deepStrictEqual(payment.providerData, { someRawData: 'some value' });
     });
 
+    it('should throw an error if the ID is not provided', () => {
+        assert.throws(() => new Payment({
+            id: '',
+            amount: 1,
+            currency: new Currency('USD'),
+            status: 'initiated',
+            orderId: '123',
+            method: 'credit_card',
+            provider: 'stripe',
+            providerPaymentId: '123',
+            providerData: {
+                someRawData: 'some value',
+            },
+            idempotencyKey: '123',
+            description: 'Test payment',
+            amountRefunded: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        }), {
+            name: 'ValidationError',
+            message: 'ID is required',
+        });
+    });
+
     it('should throw an error if the amount is less than 0', () => {
         assert.throws(() => new Payment({
             id: '123',
@@ -91,6 +115,29 @@ describe('Payment', () => {
         });
     });
 
+    it('should throw an error if the idempotency key is not provided', () => {
+        assert.throws(() => new Payment({
+            id: '123',
+            amount: 100,
+            currency: new Currency('USD'),
+            status: 'initiated',
+            orderId: '123',
+            method: 'credit_card',
+            provider: 'stripe',
+            providerPaymentId: '123',
+            providerData: {
+                someRawData: 'some value',
+            },
+            idempotencyKey: '',
+            description: 'Test payment',
+            amountRefunded: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+        }), {
+            name: 'ValidationError',
+            message: 'Idempotency key is required',
+        });
+    });
 
     it('should return true if the payment can transition to the given status', () => {
         const paymentData = {
