@@ -89,7 +89,7 @@
         "test:coverage": {
             "executor": "nx:run-commands",
             "options": {
-                "command": "c8 --exclude=\"**/*.spec.ts\" --exclude=\"**/*.test.ts\" --reporter=text --reporter=html --reporter=lcov node --import tsx --test \"apps/payment-service/src/**/*.spec.ts\" \"apps/payment-service/src/**/*.test.ts\""
+                "command": "c8 --all --src=apps/payment-service/src --extension=.ts --exclude=\"**/*.spec.ts\" --exclude=\"**/*.test.ts\" --reporter=text --reporter=html --reporter=lcov node --import tsx --test \"apps/payment-service/src/**/*.spec.ts\" \"apps/payment-service/src/**/*.test.ts\""
             }
         },
         "test:all:coverage": {
