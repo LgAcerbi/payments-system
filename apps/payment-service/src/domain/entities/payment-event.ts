@@ -62,7 +62,7 @@ class PaymentEvent {
             throw new ValidationError('ID is required');
         }
 
-        if (!paymentId) {
+        if (paymentId === '') {
             throw new ValidationError('Payment ID is required');
         }
 
