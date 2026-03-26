@@ -12,8 +12,17 @@ class PaymentEventService {
     ) {}
 
     async handlePaymentEvent(
-        paymentEvent: Pick<PaymentEvent, 'event' | 'occurredAt' | 'idempotencyKey' | 'provider' | 'providerEventId' | 'providerPaymentId' | 'providerRawPayload'>,
-        paymentData: Pick<Payment, 'status' >,
+        paymentEvent: Pick<
+            PaymentEvent,
+            | 'event'
+            | 'occurredAt'
+            | 'idempotencyKey'
+            | 'provider'
+            | 'providerEventId'
+            | 'providerPaymentId'
+            | 'providerRawPayload'
+        >,
+        paymentData: Pick<Payment, 'status'>,
     ): Promise<void> {
         const existingPaymentEvent = await this.paymentEventRepository.findPaymentEventByIdempotencyKey(
             paymentEvent.idempotencyKey,

@@ -57,7 +57,6 @@ class PaymentEvent {
         occurredAt: Date;
         createdAt: Date;
     }) {
-
         if (!id) {
             throw new ValidationError('ID is required');
         }

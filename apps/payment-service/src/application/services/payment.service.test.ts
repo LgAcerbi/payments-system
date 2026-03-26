@@ -10,7 +10,6 @@ const currentDate = new Date();
 
 const paymentRepositoryMock: PaymentRepository = {
     createPayment: async (payment: Payment) => {
-
         return new Payment({
             ...payment,
             id: '123',
@@ -67,14 +66,17 @@ describe('PaymentService', () => {
     it('should create a payment', async () => {
         const paymentService = new PaymentService(paymentRepositoryMock, paymentProviderGatewayResolverMock);
 
-        const payment = await paymentService.createPayment({
-            amount: 100,
-            currency: 'USD',
-            orderId: '123',
-            method: 'credit_card',
-            provider: 'stripe',
-            description: 'Test payment',
-        }, '123');
+        const payment = await paymentService.createPayment(
+            {
+                amount: 100,
+                currency: 'USD',
+                orderId: '123',
+                method: 'credit_card',
+                provider: 'stripe',
+                description: 'Test payment',
+            },
+            '123',
+        );
 
         assert.strictEqual(payment.id, '123');
         assert.strictEqual(payment.amount, 100);
@@ -95,26 +97,30 @@ describe('PaymentService', () => {
     it('should throw an error if the payment with the same idempotency key already exists', async () => {
         const paymentService = new PaymentService(paymentRepositoryMock, paymentProviderGatewayResolverMock);
 
-        const findPaymentByIdempotencyKeyMock = mock.method(paymentRepositoryMock, 'findPaymentByIdempotencyKey', async () => {
-            return new Payment({
-                id: '123',
-                amount: 100,
-                currency: new Currency('USD'),
-                status: 'initiated',
-                orderId: '123',
-                method: 'credit_card',
-                provider: 'stripe',
-                providerPaymentId: '123',
-                providerData: {
+        const findPaymentByIdempotencyKeyMock = mock.method(
+            paymentRepositoryMock,
+            'findPaymentByIdempotencyKey',
+            async () => {
+                return new Payment({
                     id: '123',
-                },
-                idempotencyKey: '123',
-                description: 'Test payment',
-                amountRefunded: null,
-                createdAt: currentDate,
-                updatedAt: currentDate,
-            });
-        });
+                    amount: 100,
+                    currency: new Currency('USD'),
+                    status: 'initiated',
+                    orderId: '123',
+                    method: 'credit_card',
+                    provider: 'stripe',
+                    providerPaymentId: '123',
+                    providerData: {
+                        id: '123',
+                    },
+                    idempotencyKey: '123',
+                    description: 'Test payment',
+                    amountRefunded: null,
+                    createdAt: currentDate,
+                    updatedAt: currentDate,
+                });
+            },
+        );
 
         await assert.rejects(
             paymentService.createPayment(

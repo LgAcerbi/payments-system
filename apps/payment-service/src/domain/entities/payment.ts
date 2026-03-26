@@ -58,7 +58,6 @@ class Payment {
         createdAt: Date;
         updatedAt: Date;
     }) {
-
         if (!id) {
             throw new ValidationError('ID is required');
         }

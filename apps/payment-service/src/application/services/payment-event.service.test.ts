@@ -46,8 +46,10 @@ const createPaymentEvent = (overrides: Partial<PaymentEvent> = {}): PaymentEvent
 const paymentRepositoryMock: PaymentRepository = {
     createPayment: async (payment: Payment) => createPayment(),
     getPaymentById: async (id: Payment['id']) => null,
-    getPaymentByProviderPaymentId: async (providerPaymentId: Payment['providerPaymentId'], provider: Payment['provider']) =>
-        null,
+    getPaymentByProviderPaymentId: async (
+        providerPaymentId: Payment['providerPaymentId'],
+        provider: Payment['provider'],
+    ) => null,
     getPaymentByOrderId: async (orderId: Payment['orderId']) => null,
     confirmPaymentIntent: async (paymentId: Payment['id']) => undefined,
     updatePaymentStatusById: async (paymentId: Payment['id'], status: Payment['status']) => undefined,
@@ -73,8 +75,14 @@ const paymentEventRepositoryMock: PaymentEventRepository = {
 describe('PaymentEventService', () => {
     it('should process payment initiated event without payment lookup', async () => {
         const service = new PaymentEventService(paymentRepositoryMock, paymentEventRepositoryMock);
-        const updateStatusMock = mock.method(paymentEventRepositoryMock, 'updatePaymentEventStatus', async () => undefined);
-        const getByProviderMock = mock.method(paymentRepositoryMock, 'getPaymentByProviderPaymentId', async () => createPayment());
+        const updateStatusMock = mock.method(
+            paymentEventRepositoryMock,
+            'updatePaymentEventStatus',
+            async () => undefined,
+        );
+        const getByProviderMock = mock.method(paymentRepositoryMock, 'getPaymentByProviderPaymentId', async () =>
+            createPayment(),
+        );
 
         await service.handlePaymentEvent(
             {
@@ -128,7 +136,11 @@ describe('PaymentEventService', () => {
 
     it('should fail event and throw not found when payment does not exist', async () => {
         const service = new PaymentEventService(paymentRepositoryMock, paymentEventRepositoryMock);
-        const updateStatusMock = mock.method(paymentEventRepositoryMock, 'updatePaymentEventStatus', async () => undefined);
+        const updateStatusMock = mock.method(
+            paymentEventRepositoryMock,
+            'updatePaymentEventStatus',
+            async () => undefined,
+        );
 
         await assert.rejects(
             service.handlePaymentEvent(
@@ -160,7 +172,11 @@ describe('PaymentEventService', () => {
         const getByProviderMock = mock.method(paymentRepositoryMock, 'getPaymentByProviderPaymentId', async () =>
             createPayment('initiated'),
         );
-        const updateStatusMock = mock.method(paymentEventRepositoryMock, 'updatePaymentEventStatus', async () => undefined);
+        const updateStatusMock = mock.method(
+            paymentEventRepositoryMock,
+            'updatePaymentEventStatus',
+            async () => undefined,
+        );
 
         await assert.rejects(
             service.handlePaymentEvent(
@@ -195,7 +211,11 @@ describe('PaymentEventService', () => {
         const getByProviderMock = mock.method(paymentRepositoryMock, 'getPaymentByProviderPaymentId', async () =>
             createPayment('succeeded'),
         );
-        const updateStatusMock = mock.method(paymentEventRepositoryMock, 'updatePaymentEventStatus', async () => undefined);
+        const updateStatusMock = mock.method(
+            paymentEventRepositoryMock,
+            'updatePaymentEventStatus',
+            async () => undefined,
+        );
         const updatePaymentStatusMock = mock.method(
             paymentRepositoryMock,
             'updatePaymentStatusByProviderPaymentId',
@@ -235,7 +255,11 @@ describe('PaymentEventService', () => {
             'updatePaymentStatusByProviderPaymentId',
             async () => undefined,
         );
-        const updateStatusMock = mock.method(paymentEventRepositoryMock, 'updatePaymentEventStatus', async () => undefined);
+        const updateStatusMock = mock.method(
+            paymentEventRepositoryMock,
+            'updatePaymentEventStatus',
+            async () => undefined,
+        );
 
         await service.handlePaymentEvent(
             {

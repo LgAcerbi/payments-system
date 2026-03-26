@@ -1,6 +1,6 @@
-import assert from "node:assert/strict";
-import { describe, it } from "node:test";
-import { Currency } from "./currency";
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
+import { Currency } from './currency';
 
 describe('Currency', () => {
     it('should create a currency', () => {

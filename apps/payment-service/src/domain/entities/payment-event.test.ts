@@ -156,18 +156,54 @@ describe('PaymentEvent', () => {
         });
 
         // created
-        assert.strictEqual(createdPaymentEvent.canTransitionTo('created'), false, 'Created payment event cannot transition to created');
-        assert.strictEqual(createdPaymentEvent.canTransitionTo('processed'), true, 'Created payment event can transition to processed');
-        assert.strictEqual(createdPaymentEvent.canTransitionTo('failed'), true, 'Created payment event can transition to failed');
+        assert.strictEqual(
+            createdPaymentEvent.canTransitionTo('created'),
+            false,
+            'Created payment event cannot transition to created',
+        );
+        assert.strictEqual(
+            createdPaymentEvent.canTransitionTo('processed'),
+            true,
+            'Created payment event can transition to processed',
+        );
+        assert.strictEqual(
+            createdPaymentEvent.canTransitionTo('failed'),
+            true,
+            'Created payment event can transition to failed',
+        );
 
         // processed
-        assert.strictEqual(processedPaymentEvent.canTransitionTo('created'), false, 'Processed payment event cannot transition to created');
-        assert.strictEqual(processedPaymentEvent.canTransitionTo('processed'), false, 'Processed payment event cannot transition to processed');
-        assert.strictEqual(processedPaymentEvent.canTransitionTo('failed'), false, 'Processed payment event cannot transition to failed');
+        assert.strictEqual(
+            processedPaymentEvent.canTransitionTo('created'),
+            false,
+            'Processed payment event cannot transition to created',
+        );
+        assert.strictEqual(
+            processedPaymentEvent.canTransitionTo('processed'),
+            false,
+            'Processed payment event cannot transition to processed',
+        );
+        assert.strictEqual(
+            processedPaymentEvent.canTransitionTo('failed'),
+            false,
+            'Processed payment event cannot transition to failed',
+        );
 
         // failed
-        assert.strictEqual(failedPaymentEvent.canTransitionTo('created'), false, 'Failed payment event cannot transition to created');
-        assert.strictEqual(failedPaymentEvent.canTransitionTo('processed'), false, 'Failed payment event cannot transition to processed');
-        assert.strictEqual(failedPaymentEvent.canTransitionTo('failed'), false, 'Failed payment event cannot transition to failed');
+        assert.strictEqual(
+            failedPaymentEvent.canTransitionTo('created'),
+            false,
+            'Failed payment event cannot transition to created',
+        );
+        assert.strictEqual(
+            failedPaymentEvent.canTransitionTo('processed'),
+            false,
+            'Failed payment event cannot transition to processed',
+        );
+        assert.strictEqual(
+            failedPaymentEvent.canTransitionTo('failed'),
+            false,
+            'Failed payment event cannot transition to failed',
+        );
     });
 });
