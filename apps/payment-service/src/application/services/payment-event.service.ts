@@ -70,7 +70,7 @@ class PaymentEventService {
 
         const { status: incomingPaymentStatus } = paymentData;
 
-        if (paymentEvent.event === 'payment-succeeded' && payment.status === `${incomingPaymentStatus}`) {
+        if (paymentEvent.event === 'payment-succeeded' && payment.status === incomingPaymentStatus) {
             await this.paymentEventRepository.updatePaymentEventStatus(createdPaymentEvent.id, 'processed');
 
             return;
