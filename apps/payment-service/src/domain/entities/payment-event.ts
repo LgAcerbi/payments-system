@@ -89,9 +89,9 @@ class PaymentEvent {
             return false;
         }
 
-        const statusDependencies = this.statusDependencies.get(this.status);
+        const statusDependencies = this.statusDependencies.get(status);
 
-        if (statusDependencies && !statusDependencies.includes(status)) {
+        if (statusDependencies && !statusDependencies.includes(this.status)) {
             return false;
         }
 
