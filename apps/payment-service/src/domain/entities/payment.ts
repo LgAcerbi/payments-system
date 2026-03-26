@@ -3,8 +3,10 @@ import { ValidationError } from '@workspace/errors';
 type PaymentStatus = 'initiated' | 'processing' | 'succeeded' | 'failed' | 'canceled';
 type PaymentProvider = 'stripe';
 
+const currencyRegex = /^[A-Z]{3}$/;
+
 class Payment {
-    private readonly eventStatusesDependencies = new Map<PaymentStatus, PaymentStatus[]>([
+    private readonly statusDependencies = new Map<PaymentStatus, PaymentStatus[]>([
         ['succeeded', ['processing']],
         ['processing', ['initiated']],
         ['failed', ['processing']],
@@ -65,6 +67,10 @@ class Payment {
             throw new ValidationError('Order ID is required');
         }
 
+        if (!currencyRegex.test(currency)) {
+            throw new ValidationError('Currency must be a valid ISO 4217 currency code');
+        }
+
         this.id = id;
         this.amount = amount;
         this.description = description;
@@ -82,7 +88,11 @@ class Payment {
     }
 
     public canTransitionTo(status: PaymentStatus): boolean {
-        const statusDependencies = this.eventStatusesDependencies.get(this.status);
+        const statusDependencies = this.statusDependencies.get(this.status);
+
+        if (this.status === status) {
+            return false;
+        }
 
         if (statusDependencies && !statusDependencies.includes(status)) {
             return false;

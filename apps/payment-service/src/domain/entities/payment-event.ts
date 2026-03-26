@@ -10,6 +10,11 @@ type PaymentEvents =
 type PaymentEventStatus = 'created' | 'processed' | 'failed';
 
 class PaymentEvent {
+    private readonly statusDependencies = new Map<PaymentEventStatus, PaymentEventStatus[]>([
+        ['processed', ['created']],
+        ['failed', ['created']],
+    ]);
+
     public readonly id: string;
     public readonly paymentId: Payment['id'] | null;
     public readonly event: PaymentEvents;
@@ -62,6 +67,20 @@ class PaymentEvent {
         this.providerRawPayload = providerRawPayload;
         this.occurredAt = occurredAt;
         this.createdAt = createdAt;
+    }
+
+    public canTransitionTo(status: PaymentEventStatus): boolean {
+        if (this.status === status) {
+            return false;
+        }
+
+        const statusDependencies = this.statusDependencies.get(this.status);
+
+        if (statusDependencies && !statusDependencies.includes(status)) {
+            return false;
+        }
+
+        return true;
     }
 }
 
