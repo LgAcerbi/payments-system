@@ -70,6 +70,23 @@ export async function compose(
     const paymentService = new PaymentService(postgresPaymentRepository, paymentProviderGatewayResolver);
     const paymentEventService = new PaymentEventService(postgresPaymentRepository, postgresPaymentEventRepository);
 
+    const kafkaClient = new KafkaClient({ brokers: kafkaBrokers, clientId: 'payment-service' });
+    const consumer = await kafkaClient.getConsumer('payment-service', 'payment-events');
+    const producer = await kafkaClient.getProducer();
+    const deadLetterConfig = {
+        producer,
+        topic: 'payment-events-dead-letter',
+    };
+
+    const kafkaPaymentProviderEventConsumer = new KafkaPaymentProviderEventConsumer({
+        kafkaConsumer: consumer,
+        paymentEventService,
+        paymentEventMapperResolver,
+        retryAttempts: messagingRetryAttempts,
+        retryBaseDelayMs: messagingRetryBaseDelayMs,
+        deadLetterConfig,
+    });
+
     const httpErrorHelper = new HttpErrorHelper({
         urnNamespace: 'urn:payment-service:problem:',
     });
@@ -87,26 +104,9 @@ export async function compose(
         httpErrorHandler,
     ).start();
     const httpPaymentController = new FastifyHttpPaymentController(httpServer, paymentService);
-    const httpHealthController = new FastifyHttpHealthController(httpServer);
+    const httpHealthController = new FastifyHttpHealthController(httpServer, consumer, pgClient);
     httpPaymentController.addRoutes();
     httpHealthController.addRoutes();
-
-    const kafkaClient = new KafkaClient({ brokers: kafkaBrokers, clientId: 'payment-service' });
-    const consumer = await kafkaClient.getConsumer('payment-service', 'payment-events');
-    const producer = await kafkaClient.getProducer();
-    const deadLetterConfig = {
-        producer,
-        topic: 'payment-events-dead-letter',
-    };
-
-    const kafkaPaymentProviderEventConsumer = new KafkaPaymentProviderEventConsumer({
-        kafkaConsumer: consumer,
-        paymentEventService,
-        paymentEventMapperResolver,
-        retryAttempts: messagingRetryAttempts,
-        retryBaseDelayMs: messagingRetryBaseDelayMs,
-        deadLetterConfig,
-    });
 
     let isShuttingDown = false;
 
