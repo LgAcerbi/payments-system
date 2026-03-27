@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { PaymentEventRepository, PaymentRepository } from '../';
+import type { PaymentEventRepository, PaymentRepository, PaymentUnitOfWork } from '../';
 
 import assert from 'node:assert/strict';
 import { describe, it, mock } from 'node:test';
@@ -72,9 +72,17 @@ const paymentEventRepositoryMock: PaymentEventRepository = {
     findPaymentEventByIdempotencyKey: async (idempotencyKey: PaymentEvent['idempotencyKey']) => null,
 };
 
+const paymentUnitOfWorkMock: PaymentUnitOfWork = {
+    runInTransaction: async (callback) =>
+        callback({
+            paymentRepository: paymentRepositoryMock,
+            paymentEventRepository: paymentEventRepositoryMock,
+        }),
+};
+
 describe('PaymentEventService', () => {
     it('should process payment initiated event without payment lookup', async () => {
-        const service = new PaymentEventService(paymentRepositoryMock, paymentEventRepositoryMock);
+        const service = new PaymentEventService(paymentUnitOfWorkMock);
         const updateStatusMock = mock.method(
             paymentEventRepositoryMock,
             'updatePaymentEventStatus',
@@ -105,7 +113,7 @@ describe('PaymentEventService', () => {
     });
 
     it('should throw conflict when idempotency key already exists', async () => {
-        const service = new PaymentEventService(paymentRepositoryMock, paymentEventRepositoryMock);
+        const service = new PaymentEventService(paymentUnitOfWorkMock);
         const findByIdempotencyMock = mock.method(
             paymentEventRepositoryMock,
             'findPaymentEventByIdempotencyKey',
@@ -135,7 +143,7 @@ describe('PaymentEventService', () => {
     });
 
     it('should fail event and throw not found when payment does not exist', async () => {
-        const service = new PaymentEventService(paymentRepositoryMock, paymentEventRepositoryMock);
+        const service = new PaymentEventService(paymentUnitOfWorkMock);
         const updateStatusMock = mock.method(
             paymentEventRepositoryMock,
             'updatePaymentEventStatus',
@@ -168,7 +176,7 @@ describe('PaymentEventService', () => {
     });
 
     it('should fail event and throw conflict when payment status transition is invalid', async () => {
-        const service = new PaymentEventService(paymentRepositoryMock, paymentEventRepositoryMock);
+        const service = new PaymentEventService(paymentUnitOfWorkMock);
         const getByProviderMock = mock.method(paymentRepositoryMock, 'getPaymentByProviderPaymentId', async () =>
             createPayment('initiated'),
         );
@@ -207,7 +215,7 @@ describe('PaymentEventService', () => {
     });
 
     it('should process succeeded event when payment is already succeeded', async () => {
-        const service = new PaymentEventService(paymentRepositoryMock, paymentEventRepositoryMock);
+        const service = new PaymentEventService(paymentUnitOfWorkMock);
         const getByProviderMock = mock.method(paymentRepositoryMock, 'getPaymentByProviderPaymentId', async () =>
             createPayment('succeeded'),
         );
@@ -246,7 +254,7 @@ describe('PaymentEventService', () => {
     });
 
     it('should update payment status and process event when transition is valid', async () => {
-        const service = new PaymentEventService(paymentRepositoryMock, paymentEventRepositoryMock);
+        const service = new PaymentEventService(paymentUnitOfWorkMock);
         const getByProviderMock = mock.method(paymentRepositoryMock, 'getPaymentByProviderPaymentId', async () =>
             createPayment('processing'),
         );

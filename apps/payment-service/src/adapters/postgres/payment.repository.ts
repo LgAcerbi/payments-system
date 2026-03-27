@@ -1,5 +1,5 @@
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { PostgresPaymentDbSchema } from './payment.schema';
+import type { PostgresDbSchema } from './db.schema';
 
 import { eq, and } from 'drizzle-orm';
 import { Payment, Currency } from '../../domain';
@@ -7,7 +7,7 @@ import { postgresPaymentDbSchema } from './payment.schema';
 import { PaymentRepository } from '../../application';
 
 class PostgresPaymentRepository implements PaymentRepository {
-    constructor(private readonly db: NodePgDatabase<PostgresPaymentDbSchema>) {}
+    constructor(private readonly db: NodePgDatabase<PostgresDbSchema>) {}
 
     async createPayment(payment: Payment): Promise<Payment> {
         await this.db

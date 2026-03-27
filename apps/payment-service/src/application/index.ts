@@ -6,3 +6,4 @@ export * from './ports/payment-provider.gateway';
 export * from './ports/payment-event.mapper';
 export * from './ports/payment-provider-gateway.resolver';
 export * from './ports/payment-event-mapper.resolver';
+export * from './ports/payment.unit-of-work';

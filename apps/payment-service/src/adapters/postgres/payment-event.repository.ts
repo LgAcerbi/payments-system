@@ -1,5 +1,5 @@
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { PostgresPaymentEventDbSchema } from './payment-event.schema';
+import type { PostgresDbSchema } from './db.schema';
 
 import { eq } from 'drizzle-orm';
 import { postgresPaymentEventDbSchema } from './payment-event.schema';
@@ -7,7 +7,7 @@ import { PaymentEvent } from '../../domain';
 import { PaymentEventRepository } from '../../application';
 
 class PostgresPaymentEventRepository implements PaymentEventRepository {
-    constructor(private readonly db: NodePgDatabase<PostgresPaymentEventDbSchema>) {}
+    constructor(private readonly db: NodePgDatabase<PostgresDbSchema>) {}
 
     async createPaymentEvent(paymentEvent: PaymentEvent) {
         const [result] = await this.db

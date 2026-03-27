@@ -3,6 +3,7 @@ export * from './http/fastify/health.controller';
 export * from './kafka/payment-provider-event.consumer';
 export * from './postgres/payment.repository';
 export * from './postgres/payment-event.repository';
+export * from './postgres/payment.unit-of-work';
 export * from './postgres/payment.schema';
 export * from './postgres/payment-event.schema';
 export * from './postgres/db.schema';

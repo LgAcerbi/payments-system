@@ -11,7 +11,7 @@ import {
     FastifyHttpHealthController,
     KafkaPaymentProviderEventConsumer,
     PostgresPaymentRepository,
-    PostgresPaymentEventRepository,
+    PostgresPaymentUnitOfWork,
     StripePaymentProviderGateway,
     StripePaymentEventMapper,
     PaymentProviderGatewayResolverAdapter,
@@ -65,10 +65,10 @@ export async function compose(
     );
 
     const postgresPaymentRepository = new PostgresPaymentRepository(dbInstance);
-    const postgresPaymentEventRepository = new PostgresPaymentEventRepository(dbInstance);
 
     const paymentService = new PaymentService(postgresPaymentRepository, paymentProviderGatewayResolver);
-    const paymentEventService = new PaymentEventService(postgresPaymentRepository, postgresPaymentEventRepository);
+    const postgresPaymentUnitOfWork = new PostgresPaymentUnitOfWork(dbInstance);
+    const paymentEventService = new PaymentEventService(postgresPaymentUnitOfWork);
 
     const kafkaClient = new KafkaClient({ brokers: kafkaBrokers, clientId: 'payment-service' });
     const consumer = await kafkaClient.getConsumer('payment-service', 'payment-events');
