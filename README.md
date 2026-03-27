@@ -28,7 +28,18 @@ A production-oriented payment processing backend built with **Node.js**, **TypeS
   - [Environment Variables](#environment-variables)
   - [Running with Docker Compose](#running-with-docker-compose)
   - [Running Locally (Development)](#running-locally-development)
+- [TODO / Project Status](#todo--project-status)
 - [Roadmap](#roadmap)
+
+---
+
+## TODO / Project Status
+
+This project is still under active development and is intentionally incomplete.
+
+- The `payment-service` is implemented and evolving.
+- The `order-service` is not implemented yet.
+- End-to-end order-to-payment orchestration is therefore incomplete.
 
 ---
 
