@@ -4,6 +4,7 @@ import { PgDrizzleClient } from '@workspace/drizzle-pg';
 import { HttpErrorHelper } from '@workspace/http';
 import { FastifyServer, FastifyErrorHandler } from '@workspace/fastify';
 import { KafkaClient } from '@workspace/kafka';
+import { logger } from '@workspace/logger';
 import {
     postgresDbSchema,
     FastifyHttpPaymentController,
@@ -32,7 +33,11 @@ export type ComposeOptions = {
 
 export async function compose(
     options: ComposeOptions,
-): Promise<{ httpServer: FastifyHttpServerInstance; eventConsumers: { startConsume: () => Promise<void> }[] }> {
+): Promise<{
+    httpServer: FastifyHttpServerInstance;
+    eventConsumers: { startConsume: () => Promise<void>; stopConsume: () => Promise<void> }[];
+    shutdown: () => Promise<void>;
+}> {
     const {
         privateStripeKey,
         databaseUrl,
@@ -103,5 +108,52 @@ export async function compose(
         deadLetterConfig,
     });
 
-    return { httpServer, eventConsumers: [kafkaPaymentProviderEventConsumer] };
+    let isShuttingDown = false;
+
+    const shutdown = async (): Promise<void> => {
+        if (isShuttingDown) {
+            return;
+        }
+
+        isShuttingDown = true;
+        const shutdownErrors: Error[] = [];
+
+        try {
+            for (const eventConsumer of [kafkaPaymentProviderEventConsumer]) {
+                await eventConsumer.stopConsume();
+            }
+        } catch (error) {
+            shutdownErrors.push(error instanceof Error ? error : new Error(String(error)));
+            logger.error({ err: error }, 'Failed to stop Kafka consumers during shutdown');
+        }
+
+        try {
+            await producer.disconnect();
+        } catch (error) {
+            shutdownErrors.push(error instanceof Error ? error : new Error(String(error)));
+            logger.error({ err: error }, 'Failed to disconnect Kafka producer during shutdown');
+        }
+
+        try {
+            await httpServer.close();
+        } catch (error) {
+            shutdownErrors.push(error instanceof Error ? error : new Error(String(error)));
+            logger.error({ err: error }, 'Failed to close HTTP server during shutdown');
+        }
+
+        try {
+            await pgClient.close();
+        } catch (error) {
+            shutdownErrors.push(error instanceof Error ? error : new Error(String(error)));
+            logger.error({ err: error }, 'Failed to close database client during shutdown');
+        }
+
+        if (shutdownErrors.length > 0) {
+            throw new Error(
+                `Shutdown completed with ${shutdownErrors.length} error(s): ${shutdownErrors.map((error) => error.message).join('; ')}`,
+            );
+        }
+    };
+
+    return { httpServer, eventConsumers: [kafkaPaymentProviderEventConsumer], shutdown };
 }

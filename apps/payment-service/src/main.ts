@@ -2,6 +2,8 @@ import 'dotenv/config';
 import { logger } from '@workspace/logger';
 import { compose } from './compositor';
 
+const SHUTDOWN_TIMEOUT_MS = 15_000;
+
 async function main() {
     const {
         PRIVATE_STRIPE_KEY,
@@ -40,7 +42,7 @@ async function main() {
         process.exit(1);
     }
 
-    const { httpServer, eventConsumers } = await compose({
+    const { httpServer, eventConsumers, shutdown } = await compose({
         privateStripeKey: PRIVATE_STRIPE_KEY,
         databaseUrl: DATABASE_URL,
         kafkaBrokers,
@@ -52,6 +54,54 @@ async function main() {
         messagingRetryBaseDelayMs: Number(MESSAGING_RETRY_BASE_DELAY_MS),
     });
 
+    let isShuttingDown = false;
+
+    const shutdownWithTimeout = async (reason: string, successExitCode: number): Promise<void> => {
+        if (isShuttingDown) {
+            logger.warn({ reason }, 'Graceful shutdown already in progress');
+
+            return;
+        }
+
+        isShuttingDown = true;
+        logger.info({ reason }, 'Starting graceful shutdown');
+
+        try {
+            await Promise.race([
+                shutdown(),
+                new Promise<never>((_, reject) => {
+                    setTimeout(() => {
+                        reject(new Error(`Graceful shutdown timeout after ${SHUTDOWN_TIMEOUT_MS}ms`));
+                    }, SHUTDOWN_TIMEOUT_MS);
+                }),
+            ]);
+
+            logger.info({ reason }, 'Graceful shutdown completed');
+            process.exit(successExitCode);
+        } catch (error) {
+            logger.error({ err: error, reason }, 'Graceful shutdown failed');
+            process.exit(1);
+        }
+    };
+
+    process.on('SIGTERM', () => {
+        void shutdownWithTimeout('SIGTERM', 0);
+    });
+
+    process.on('SIGINT', () => {
+        void shutdownWithTimeout('SIGINT', 0);
+    });
+
+    process.on('uncaughtException', (error) => {
+        logger.error({ err: error }, 'Uncaught exception');
+        void shutdownWithTimeout('uncaughtException', 1);
+    });
+
+    process.on('unhandledRejection', (reason) => {
+        logger.error({ reason }, 'Unhandled promise rejection');
+        void shutdownWithTimeout('unhandledRejection', 1);
+    });
+
     for (const eventConsumer of eventConsumers) {
         await eventConsumer.startConsume();
     }
@@ -59,10 +109,15 @@ async function main() {
     httpServer.listen({ port: httpPort, host: HTTP_HOST }, (err: Error | null, address: string) => {
         if (err) {
             httpServer.log.error(err);
-            process.exit(1);
+            void shutdownWithTimeout('http-server-listen-error', 1);
+
+            return;
         }
         logger.info(`payment-service running on ${address}`);
     });
 }
 
-main();
+main().catch((error) => {
+    logger.error({ err: error }, 'Failed to start payment-service');
+    process.exit(1);
+});

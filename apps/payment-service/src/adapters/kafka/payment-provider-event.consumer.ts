@@ -35,6 +35,7 @@ class KafkaPaymentProviderEventConsumer {
     private readonly retryAttempts: number;
     private readonly retryBaseDelayMs: number;
     private readonly deadLetter?: DeadLetterConfig;
+    private isStopped = false;
 
     constructor(options: KafkaPaymentProviderEventConsumerOptions) {
         this.kafkaConsumer = options.kafkaConsumer;
@@ -261,6 +262,17 @@ class KafkaPaymentProviderEventConsumer {
                 }
             },
         });
+    }
+
+    public async stopConsume(): Promise<void> {
+        if (this.isStopped) {
+            return;
+        }
+
+        this.isStopped = true;
+
+        await this.kafkaConsumer.stop();
+        await this.kafkaConsumer.disconnect();
     }
 }
 
