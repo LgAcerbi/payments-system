@@ -1,0 +1,3 @@
+CREATE INDEX "payments_provider_provider_payment_id_idx" ON "payments" USING btree ("provider","provider_payment_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "payment_events_idempotency_key_uidx" ON "payment_events" USING btree ("idempotency_key");--> statement-breakpoint
+CREATE INDEX "payment_events_provider_provider_event_id_idx" ON "payment_events" USING btree ("provider","provider_event_id");
