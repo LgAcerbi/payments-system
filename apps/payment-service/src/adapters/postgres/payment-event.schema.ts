@@ -33,5 +33,5 @@ const postgresPaymentEventDbSchema = {
 type PostgresPaymentEventDbSchema = typeof postgresPaymentEventDbSchema;
 
 export default postgresPaymentEventSchema;
-export { postgresPaymentEventSchema, postgresPaymentEventDbSchema, paymentEventStatusEnum };
+export { postgresPaymentEventSchema, postgresPaymentEventDbSchema, paymentEventEnum, paymentEventStatusEnum };
 export type { PostgresPaymentEventDbSchema };
